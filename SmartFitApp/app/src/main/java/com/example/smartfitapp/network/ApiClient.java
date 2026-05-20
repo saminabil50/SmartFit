@@ -8,7 +8,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     // Use 10.0.2.2 for Android emulator (maps to host machine's localhost)
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    // Change to your machine's LAN IP when testing on a physical device
+    public static final String BASE_URL = "http://10.0.2.2:8080/";
+
+    public static String fullImageUrl(String relativeUrl) {
+        if (relativeUrl == null) return null;
+        return BASE_URL.replaceAll("/$", "") + relativeUrl;
+    }
 
     private static ApiService instance;
 

@@ -44,15 +44,12 @@ public class RegisterActivity extends AppCompatActivity {
         loginLink.setOnClickListener(v -> finish());
     }
 
+
     private void attemptRegister() {
         String fullName        = fullNameInput.getText().toString().trim();
         String email           = emailInput.getText().toString().trim();
         String password        = passwordInput.getText().toString();
         String confirmPassword = confirmPasswordInput.getText().toString();
-
-
-
-
 
         if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showError("All fields are required");

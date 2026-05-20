@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Uploads — never commit user images ###
+uploads/*
+!uploads/.gitkeep
+
+### Environment ###
+.env

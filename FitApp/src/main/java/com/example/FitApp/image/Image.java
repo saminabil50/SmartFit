@@ -1,44 +1,44 @@
-package com.example.FitApp.user;
+package com.example.FitApp.image;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "images")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String fullName;
-
-    @Column(unique = true, nullable = false)
-    private String email;
+    private Long userId;
 
     @Column(nullable = false)
-    private String hashedPassword;
+    private String filename;
 
-    // Profile fields
-    private String gender;
-    private Integer heightCm;
-    private Double weightKg;
-    private String preferredSizeSystem;
+    private String originalFilename;
+
+    @Column(nullable = false)
+    private String contentType;
+
+    private Long fileSize;
+
+    @Column(nullable = false)
+    private String imageType;
+
+    @Column(nullable = false)
+    private String filePath;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 }
