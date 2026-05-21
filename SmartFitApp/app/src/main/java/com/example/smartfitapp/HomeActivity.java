@@ -29,9 +29,11 @@ public class HomeActivity extends AppCompatActivity {
 
         TextView welcomeText = findViewById(R.id.welcomeText);
         TextView emailText   = findViewById(R.id.emailText);
-        Button profileButton = findViewById(R.id.profileButton);
-        Button photosButton  = findViewById(R.id.photosButton);
-        Button logoutButton  = findViewById(R.id.logoutButton);
+        Button profileButton      = findViewById(R.id.profileButton);
+        Button photosButton       = findViewById(R.id.photosButton);
+        Button measurementsButton = findViewById(R.id.measurementsButton);
+        Button catalogButton      = findViewById(R.id.catalogButton);
+        Button logoutButton       = findViewById(R.id.logoutButton);
 
         UserResponse user = authManager.getCurrentUser();
         if (user != null) {
@@ -43,6 +45,10 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, ProfileActivity.class)));
         photosButton.setOnClickListener(v ->
                 startActivity(new Intent(this, ImageGalleryActivity.class)));
+        measurementsButton.setOnClickListener(v ->
+                startActivity(new Intent(this, MeasurementsActivity.class)));
+        catalogButton.setOnClickListener(v ->
+                startActivity(new Intent(this, CatalogActivity.class)));
         logoutButton.setOnClickListener(v -> {
             authManager.logout();
             goToLogin();

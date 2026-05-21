@@ -1,9 +1,15 @@
 package com.example.smartfitapp.network;
 
+import com.example.smartfitapp.model.ClothingItem;
+import com.example.smartfitapp.model.ClothingItemListResponse;
+import com.example.smartfitapp.model.ClothingItemRequest;
+import com.example.smartfitapp.model.EstimateMeasurementRequest;
 import com.example.smartfitapp.model.ImageItem;
 import com.example.smartfitapp.model.ImageListResponse;
 import com.example.smartfitapp.model.LoginRequest;
 import com.example.smartfitapp.model.LoginResponse;
+import com.example.smartfitapp.model.MeasurementListResponse;
+import com.example.smartfitapp.model.MeasurementResponse;
 import com.example.smartfitapp.model.MessageResponse;
 import com.example.smartfitapp.model.RegisterRequest;
 import com.example.smartfitapp.model.UpdateProfileRequest;
@@ -22,6 +28,7 @@ import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -63,4 +70,45 @@ public interface ApiService {
     @DELETE("api/v1/images/{imageId}")
     Call<MessageResponse> deleteImage(@Header("Authorization") String bearerToken,
                                       @Path("imageId") Long imageId);
+
+    // ── Measurements ──────────────────────────────────────────────────────────
+    @POST("api/v1/measurements/estimate")
+    Call<MeasurementResponse> estimateMeasurements(@Header("Authorization") String bearerToken,
+                                                   @Body EstimateMeasurementRequest request);
+
+    @GET("api/v1/measurements")
+    Call<MeasurementListResponse> getMyMeasurements(@Header("Authorization") String bearerToken);
+
+    @GET("api/v1/measurements/{measurementId}")
+    Call<MeasurementResponse> getMeasurement(@Header("Authorization") String bearerToken,
+                                             @Path("measurementId") Long measurementId);
+
+    @DELETE("api/v1/measurements/{measurementId}")
+    Call<MessageResponse> deleteMeasurement(@Header("Authorization") String bearerToken,
+                                            @Path("measurementId") Long measurementId);
+
+    // ── Catalog ───────────────────────────────────────────────────────────────
+    @GET("api/v1/clothing-items")
+    Call<ClothingItemListResponse> getClothingItems(@Header("Authorization") String bearerToken,
+                                                    @Query("category") String category,
+                                                    @Query("gender") String gender,
+                                                    @Query("page") int page,
+                                                    @Query("limit") int limit);
+
+    @GET("api/v1/clothing-items/{itemId}")
+    Call<ClothingItem> getClothingItem(@Header("Authorization") String bearerToken,
+                                       @Path("itemId") Long itemId);
+
+    @POST("api/v1/clothing-items")
+    Call<ClothingItem> createClothingItem(@Header("Authorization") String bearerToken,
+                                          @Body ClothingItemRequest request);
+
+    @PATCH("api/v1/clothing-items/{itemId}")
+    Call<ClothingItem> updateClothingItem(@Header("Authorization") String bearerToken,
+                                          @Path("itemId") Long itemId,
+                                          @Body ClothingItemRequest request);
+
+    @DELETE("api/v1/clothing-items/{itemId}")
+    Call<MessageResponse> deleteClothingItem(@Header("Authorization") String bearerToken,
+                                             @Path("itemId") Long itemId);
 }

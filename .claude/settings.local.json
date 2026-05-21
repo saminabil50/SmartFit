@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(adb devices *)",
+      "Bash(./gradlew assembleDebug *)",
+      "Bash(./mvnw compile *)",
+      "Bash(./mvnw dependency:tree)",
+      "Bash(jar tf *)",
+      "Bash(xargs -I{} jar tf {})",
+      "Bash(export JWT_SECRET=\"smartfit_super_secret_jwt_key_for_dev_min_32_chars\")",
+      "Bash(./mvnw spring-boot:run)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(mysql *)",
+      "Bash(/usr/local/mysql/bin/mysql -u root -p1234578 fitApp -e \"SELECT id, email FROM users LIMIT 5;\")",
+      "Bash(/opt/homebrew/bin/mysql -u root -p1234578 fitApp -e \"SELECT id, email FROM users LIMIT 5;\")",
+      "Bash(kill 30703)",
+      "Bash(echo \"Started PID: $!\")",
+      "Bash(bash /tmp/test_request.sh)",
+      "Bash(pkill -f \"spring-boot:run\")",
+      "Bash(pkill -f \"FitAppApplication\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('total:', d['total'], '| items:', [i['name'] for i in d['items']]\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('access_token:', d.get\\('access_token','FAIL'\\)[:30]\\)\")"
+    ]
+  }
+}
