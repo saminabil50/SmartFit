@@ -4,6 +4,7 @@ import com.example.FitApp.image.ImageRepository;
 import com.example.FitApp.measurement.dto.EstimateMeasurementRequest;
 import com.example.FitApp.measurement.dto.MeasurementListResponse;
 import com.example.FitApp.measurement.dto.MeasurementResponse;
+import com.example.FitApp.preferences.PreferencesService;
 import com.example.FitApp.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ public class MeasurementService {
 
     private final MeasurementRepository measurementRepository;
     private final ImageRepository imageRepository;
+    private final PreferencesService preferencesService;
 
     /**
      * Estimate body measurements from an uploaded image.
@@ -51,8 +53,11 @@ public class MeasurementService {
                 .confidenceScore(0.25) // Stub — replace with real model output
                 .build();
 
-        Measurement saved = measurementRepository.save(m);
-        return toResponse(saved);
+        if (!preferencesService.shouldSaveMeasurementHistory(user)) {
+            return toResponse(m);
+        }
+
+        return toResponse(measurementRepository.save(m));
     }
 
     public MeasurementListResponse getMyMeasurements(User user) {

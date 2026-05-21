@@ -29,6 +29,10 @@ public class User {
     @Column(nullable = false)
     private String hashedPassword;
 
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'user'")
+    @Builder.Default
+    private String role = "user";
+
     // Profile fields
     private String gender;
     private Integer heightCm;
@@ -41,4 +45,9 @@ public class User {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    void setDefaults() {
+        if (role == null || role.isBlank()) role = "user";
+    }
 }

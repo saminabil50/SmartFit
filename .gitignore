@@ -1,0 +1,11 @@
+uploads/*
+!uploads/.gitkeep
+backend/uploads/*
+!backend/uploads/.gitkeep
+FitApp/uploads/*
+!FitApp/uploads/.gitkeep
+*.tmp
+
+SmartFitApp/.gradle/
+SmartFitApp/build/
+SmartFitApp/app/build/

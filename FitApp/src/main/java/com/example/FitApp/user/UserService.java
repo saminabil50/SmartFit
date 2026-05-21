@@ -70,6 +70,7 @@ public class UserService {
                 .id(user.getId())
                 .fullName(user.getFullName())
                 .email(user.getEmail())
+                .role(user.getRole())
                 .gender(user.getGender())
                 .heightCm(user.getHeightCm())
                 .weightKg(user.getWeightKg())

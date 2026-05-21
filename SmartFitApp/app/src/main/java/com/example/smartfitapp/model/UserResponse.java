@@ -7,6 +7,7 @@ public class UserResponse {
     @SerializedName("full_name")
     public String fullName;
     public String email;
+    public String role;
     // Profile fields (null when not set)
     public String gender;
     @SerializedName("height_cm")

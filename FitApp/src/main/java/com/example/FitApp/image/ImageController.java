@@ -23,7 +23,7 @@ public class ImageController {
     @ResponseStatus(HttpStatus.CREATED)
     public ImageResponse upload(Authentication authentication,
                                 @RequestParam("image") MultipartFile file,
-                                @RequestParam(value = "image_type", defaultValue = "fitting_photo") String imageType) {
+                                @RequestParam(value = "image_type", required = false) String imageType) {
         User user = (User) authentication.getPrincipal();
         return imageService.upload(user, file, imageType);
     }

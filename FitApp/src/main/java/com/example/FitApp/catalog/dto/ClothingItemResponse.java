@@ -14,12 +14,18 @@ import java.util.List;
 public class ClothingItemResponse {
     private Long id;
     private String name;
+    private String description;
     private String category;
     private String gender;
+    private String brand;
+    private String sizeSystem;
     private List<String> availableSizes;
+    private Double basePrice;
+    private String currency;
     private String imageUrl;
     @JsonRawValue
     private String sizeChart;      // stored JSON returned verbatim as JSON object
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

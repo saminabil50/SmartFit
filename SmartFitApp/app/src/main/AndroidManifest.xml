@@ -34,6 +34,10 @@
         <activity android:name=".MeasurementsActivity" android:exported="false" />
         <activity android:name=".CatalogActivity" android:exported="false" />
         <activity android:name=".ClothingItemDetailActivity" android:exported="false" />
+        <activity android:name=".TryOnActivity" android:exported="false" />
+        <activity android:name=".SizeRecommendationActivity" android:exported="false" />
+        <activity android:name=".PreferencesActivity" android:exported="false" />
+        <activity android:name=".AdminCatalogActivity" android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

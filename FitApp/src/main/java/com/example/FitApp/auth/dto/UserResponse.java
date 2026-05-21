@@ -13,6 +13,7 @@ public class UserResponse {
     private Long id;
     private String fullName;
     private String email;
+    private String role;
     // Profile fields (null when returned from auth endpoints)
     private String gender;
     private Integer heightCm;

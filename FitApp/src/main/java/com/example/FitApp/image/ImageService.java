@@ -2,6 +2,7 @@ package com.example.FitApp.image;
 
 import com.example.FitApp.image.dto.ImageListResponse;
 import com.example.FitApp.image.dto.ImageResponse;
+import com.example.FitApp.preferences.PreferencesService;
 import com.example.FitApp.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +38,7 @@ public class ImageService {
     private String uploadsDir;
 
     private final ImageRepository imageRepository;
+    private final PreferencesService preferencesService;
 
     public ImageResponse upload(User user, MultipartFile file, String imageType) {
         if (file == null || file.isEmpty())
@@ -51,7 +53,9 @@ public class ImageService {
             throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,
                     "Image file is too large. Maximum allowed size is 5 MB");
 
-        String resolvedType = (imageType == null || imageType.isBlank()) ? "fitting_photo" : imageType.trim();
+        String resolvedType = (imageType == null || imageType.isBlank())
+                ? preferencesService.defaultImageTypeOrDefault(user)
+                : imageType.trim();
         if (!ALLOWED_IMAGE_TYPES.contains(resolvedType))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "image_type must be one of: fitting_photo, profile_photo, mirror_photo");
