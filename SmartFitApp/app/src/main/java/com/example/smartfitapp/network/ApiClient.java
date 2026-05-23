@@ -10,7 +10,7 @@ public class ApiClient {
     // Use 10.0.2.2 for Android emulator (maps to host machine's localhost)
     // Change to your machine's LAN IP when testing on a physical device
 
-    //    public static final String BASE_URL = "http://10.0.2.2:8080/"; TODO: enable when testing virtual device
+//        public static final String BASE_URL = "http://10.0.2.2:8080/"; // TODO: enable when testing virtual device
     public static final String BASE_URL = "http://192.168.1.26:8080/";
     public static String fullImageUrl(String relativeUrl) {
         if (relativeUrl == null) return null;

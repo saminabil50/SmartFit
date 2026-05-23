@@ -1,8 +1,12 @@
 package com.example.smartfitapp;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -13,7 +17,11 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,8 +31,6 @@ import com.example.smartfitapp.model.ClothingItem;
 import com.example.smartfitapp.model.ClothingItemListResponse;
 import com.example.smartfitapp.model.FittingResult;
 import com.example.smartfitapp.model.FittingResultRequest;
-import com.example.smartfitapp.model.ImageItem;
-import com.example.smartfitapp.model.ImageListResponse;
 import com.example.smartfitapp.model.MeasurementListResponse;
 import com.example.smartfitapp.model.MeasurementResponse;
 import com.example.smartfitapp.model.MessageResponse;
@@ -34,9 +40,16 @@ import com.example.smartfitapp.model.TryOnResultListResponse;
 import com.example.smartfitapp.network.ApiClient;
 import com.google.android.material.appbar.MaterialToolbar;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -46,18 +59,50 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
     private static final int CATALOG_LIMIT = 100;
 
     private AuthManager authManager;
-    private Spinner imageSpinner, itemSpinner, measurementSpinner;
-    private Button generateButton;
+    private Spinner measurementSpinner;
+    private Button generateButton, cameraButton, galleryButton;
     private ProgressBar progressBar;
-    private ImageView resultImage;
-    private TextView resultTitle, warningText, fittingSummaryText, emptyHistoryText;
+    private ImageView selectedImagePreview, resultImage;
+    private TextView selectedItemText, resultTitle, warningText, fittingSummaryText, emptyHistoryText;
     private TryOnResultAdapter adapter;
+    private TryOnClothingAdapter clothingAdapter;
     private boolean authErrorShown = false;
+    private Uri selectedImageUri;
+    private Uri cameraOutputUri;
+    private String selectedMimeType = "image/jpeg";
+    private ClothingItem selectedClothingItem;
 
-    private final List<ImageItem> images = new ArrayList<>();
     private final List<ClothingItem> clothingItems = new ArrayList<>();
     private final List<MeasurementResponse> measurements = new ArrayList<>();
     private final List<TryOnResult> tryOnResults = new ArrayList<>();
+
+    private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            granted -> { if (granted) launchCamera(); }
+    );
+
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && cameraOutputUri != null) {
+                    selectedImageUri = cameraOutputUri;
+                    selectedMimeType = "image/jpeg";
+                    loadSelectedPreview();
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    selectedImageUri = result.getData().getData();
+                    String type = getContentResolver().getType(selectedImageUri);
+                    selectedMimeType = type != null ? type : "image/jpeg";
+                    loadSelectedPreview();
+                }
+            }
+    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,16 +120,23 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        imageSpinner = findViewById(R.id.imageSpinner);
-        itemSpinner = findViewById(R.id.itemSpinner);
+        selectedImagePreview = findViewById(R.id.selectedImagePreview);
         measurementSpinner = findViewById(R.id.measurementSpinner);
         generateButton = findViewById(R.id.generateButton);
+        cameraButton = findViewById(R.id.cameraButton);
+        galleryButton = findViewById(R.id.galleryButton);
         progressBar = findViewById(R.id.progressBar);
+        selectedItemText = findViewById(R.id.selectedItemText);
         resultImage = findViewById(R.id.resultImage);
         resultTitle = findViewById(R.id.resultTitle);
         warningText = findViewById(R.id.warningText);
         fittingSummaryText = findViewById(R.id.fittingSummaryText);
         emptyHistoryText = findViewById(R.id.emptyHistoryText);
+
+        RecyclerView clothingRecyclerView = findViewById(R.id.clothingRecyclerView);
+        clothingAdapter = new TryOnClothingAdapter(clothingItems, this::selectClothingItem);
+        clothingRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        clothingRecyclerView.setAdapter(clothingAdapter);
 
         RecyclerView recyclerView = findViewById(R.id.historyRecyclerView);
         adapter = new TryOnResultAdapter(tryOnResults, this);
@@ -92,33 +144,12 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
         recyclerView.setAdapter(adapter);
 
         generateButton.setOnClickListener(v -> generateTryOn());
+        cameraButton.setOnClickListener(v -> requestCameraAndLaunch());
+        galleryButton.setOnClickListener(v -> launchGallery());
         setLoading(true);
-        loadImages();
         loadClothingItems();
         loadMeasurements();
         loadHistory();
-    }
-
-    private void loadImages() {
-        ApiClient.get().getMyImages(authManager.getBearerToken()).enqueue(new Callback<ImageListResponse>() {
-            @Override
-            public void onResponse(Call<ImageListResponse> call, Response<ImageListResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().items != null) {
-                    images.clear();
-                    images.addAll(response.body().items);
-                    refreshImageSpinner();
-                } else if (response.code() == 401) {
-                    showAuthError();
-                }
-                updateGenerateButton();
-            }
-
-            @Override
-            public void onFailure(Call<ImageListResponse> call, Throwable t) {
-                Toast.makeText(TryOnActivity.this, "Failed to load images", Toast.LENGTH_SHORT).show();
-                updateGenerateButton();
-            }
-        });
     }
 
     private void loadClothingItems() {
@@ -129,7 +160,7 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
                         if (response.isSuccessful() && response.body() != null && response.body().items != null) {
                             clothingItems.clear();
                             clothingItems.addAll(response.body().items);
-                            refreshItemSpinner();
+                            clothingAdapter.notifyDataSetChanged();
                         } else if (response.code() == 401) {
                             showAuthError();
                         }
@@ -186,23 +217,6 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
         });
     }
 
-    private void refreshImageSpinner() {
-        List<String> labels = new ArrayList<>();
-        for (ImageItem image : images) {
-            String type = image.imageType != null ? image.imageType.replace("_", " ") : "image";
-            labels.add("#" + image.id + " - " + type);
-        }
-        imageSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, labels));
-    }
-
-    private void refreshItemSpinner() {
-        List<String> labels = new ArrayList<>();
-        for (ClothingItem item : clothingItems) {
-            labels.add("#" + item.id + " - " + item.name);
-        }
-        itemSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, labels));
-    }
-
     private void refreshMeasurementSpinner() {
         List<String> labels = new ArrayList<>();
         labels.add("No measurement");
@@ -215,14 +229,20 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
         measurementSpinner.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, labels));
     }
 
+    private void selectClothingItem(ClothingItem item) {
+        selectedClothingItem = item;
+        selectedItemText.setText(item.name != null ? item.name : "Selected item");
+        clothingAdapter.setSelectedItemId(item.id);
+        updateGenerateButton();
+    }
+
     private void generateTryOn() {
-        if (images.isEmpty() || clothingItems.isEmpty()) {
-            Toast.makeText(this, "Select an uploaded image and clothing item first", Toast.LENGTH_SHORT).show();
+        if (selectedImageUri == null || selectedClothingItem == null) {
+            Toast.makeText(this, "Choose a photo and clothing item first", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        ImageItem image = images.get(imageSpinner.getSelectedItemPosition());
-        ClothingItem item = clothingItems.get(itemSpinner.getSelectedItemPosition());
+        ClothingItem item = selectedClothingItem;
         Long selectedMeasurementId = null;
         int measurementPosition = measurementSpinner.getSelectedItemPosition();
         if (measurementPosition > 0 && measurementPosition - 1 < measurements.size()) {
@@ -232,8 +252,15 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
 
         setLoading(true);
         warningText.setVisibility(View.GONE);
-        TryOnGenerateRequest request = new TryOnGenerateRequest(image.id, item.id, measurementId);
-        ApiClient.get().generateTryOn(authManager.getBearerToken(), request).enqueue(new Callback<TryOnResult>() {
+        try {
+            byte[] bytes = readBytes(selectedImageUri);
+            RequestBody reqFile = RequestBody.create(bytes, MediaType.parse(selectedMimeType));
+            MultipartBody.Part body = MultipartBody.Part.createFormData("image", "tryon-photo", reqFile);
+            RequestBody itemPart = RequestBody.create(String.valueOf(item.id), MediaType.parse("text/plain"));
+            RequestBody measurementPart = measurementId == null
+                    ? null
+                    : RequestBody.create(String.valueOf(measurementId), MediaType.parse("text/plain"));
+            ApiClient.get().generateTryOnFromImage(authManager.getBearerToken(), body, itemPart, measurementPart).enqueue(new Callback<TryOnResult>() {
             @Override
             public void onResponse(Call<TryOnResult> call, Response<TryOnResult> response) {
                 setLoading(false);
@@ -241,7 +268,7 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
                     showResult(response.body());
                     adapter.addFirst(response.body());
                     updateHistoryEmptyState();
-                    createFittingResultFromTryOn(image, item, measurementId, response.body());
+                    createFittingResultFromTryOn(response.body().imageId, item, measurementId, response.body());
                 } else if (response.code() == 401) {
                     goToLogin();
                 } else {
@@ -255,6 +282,10 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
                 Toast.makeText(TryOnActivity.this, "Network error", Toast.LENGTH_SHORT).show();
             }
         });
+        } catch (IOException e) {
+            setLoading(false);
+            Toast.makeText(this, "Failed to read photo: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void showResult(TryOnResult result) {
@@ -274,9 +305,10 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
         }
     }
 
-    private void createFittingResultFromTryOn(ImageItem image, ClothingItem item, Long measurementId, TryOnResult tryOnResult) {
+    private void createFittingResultFromTryOn(Long imageId, ClothingItem item, Long measurementId, TryOnResult tryOnResult) {
+        if (imageId == null) return;
         FittingResultRequest request = new FittingResultRequest(
-                image.id,
+                imageId,
                 item.id,
                 measurementId,
                 null,
@@ -339,7 +371,7 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
     }
 
     private void updateGenerateButton() {
-        generateButton.setEnabled(!images.isEmpty() && !clothingItems.isEmpty());
+        generateButton.setEnabled(selectedImageUri != null && selectedClothingItem != null);
     }
 
     private void updateHistoryEmptyState() {
@@ -348,7 +380,52 @@ public class TryOnActivity extends AppCompatActivity implements TryOnResultAdapt
 
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        generateButton.setEnabled(!loading && !images.isEmpty() && !clothingItems.isEmpty());
+        generateButton.setEnabled(!loading && selectedImageUri != null && selectedClothingItem != null);
+    }
+
+    private void requestCameraAndLaunch() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            launchCamera();
+        } else {
+            permissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void launchCamera() {
+        try {
+            File photoFile = File.createTempFile("smartfit_tryon_", ".jpg", getExternalCacheDir());
+            cameraOutputUri = FileProvider.getUriForFile(this,
+                    getPackageName() + ".fileprovider", photoFile);
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraOutputUri);
+            cameraLauncher.launch(intent);
+        } catch (IOException e) {
+            Toast.makeText(this, "Cannot open camera: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void launchGallery() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        galleryLauncher.launch(intent);
+    }
+
+    private void loadSelectedPreview() {
+        selectedImagePreview.setVisibility(View.VISIBLE);
+        Glide.with(this).load(selectedImageUri).centerCrop().into(selectedImagePreview);
+        updateGenerateButton();
+    }
+
+    private byte[] readBytes(Uri uri) throws IOException {
+        try (InputStream in = getContentResolver().openInputStream(uri);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            if (in == null) throw new IOException("Cannot open URI");
+            byte[] buffer = new byte[4096];
+            int n;
+            while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
+            return out.toByteArray();
+        }
     }
 
     private void showAuthError() {

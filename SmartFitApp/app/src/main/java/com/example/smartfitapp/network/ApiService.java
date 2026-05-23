@@ -107,6 +107,12 @@ public interface ApiService {
     Call<MeasurementResponse> estimateMeasurements(@Header("Authorization") String bearerToken,
                                                    @Body EstimateMeasurementRequest request);
 
+    @Multipart
+    @POST("api/v1/measurements/estimate-from-image")
+    Call<MeasurementResponse> estimateMeasurementsFromImage(@Header("Authorization") String bearerToken,
+                                                            @Part MultipartBody.Part image,
+                                                            @Part("height_cm") RequestBody heightCm);
+
     @GET("api/v1/measurements")
     Call<MeasurementListResponse> getMyMeasurements(@Header("Authorization") String bearerToken);
 
@@ -186,6 +192,13 @@ public interface ApiService {
     @POST("api/v1/tryon/generate")
     Call<TryOnResult> generateTryOn(@Header("Authorization") String bearerToken,
                                     @Body TryOnGenerateRequest request);
+
+    @Multipart
+    @POST("api/v1/tryon/generate-from-image")
+    Call<TryOnResult> generateTryOnFromImage(@Header("Authorization") String bearerToken,
+                                             @Part MultipartBody.Part image,
+                                             @Part("item_id") RequestBody itemId,
+                                             @Part("measurement_id") RequestBody measurementId);
 
     @GET("api/v1/tryon")
     Call<TryOnResultListResponse> getTryOnResults(@Header("Authorization") String bearerToken);
