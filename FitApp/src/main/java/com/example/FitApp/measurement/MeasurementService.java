@@ -1,5 +1,7 @@
 package com.example.FitApp.measurement;
 
+import com.example.FitApp.ai.AiClient;
+import com.example.FitApp.image.Image;
 import com.example.FitApp.image.ImageRepository;
 import com.example.FitApp.measurement.dto.EstimateMeasurementRequest;
 import com.example.FitApp.measurement.dto.MeasurementListResponse;
@@ -7,13 +9,16 @@ import com.example.FitApp.measurement.dto.MeasurementResponse;
 import com.example.FitApp.preferences.PreferencesService;
 import com.example.FitApp.user.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MeasurementService {
@@ -21,37 +26,18 @@ public class MeasurementService {
     private final MeasurementRepository measurementRepository;
     private final ImageRepository imageRepository;
     private final PreferencesService preferencesService;
+    private final AiClient aiClient;
 
-    /**
-     * Estimate body measurements from an uploaded image.
-     *
-     * NOTE: This is a stub implementation. Real ML-based estimation will replace
-     * the proportion formula below in a future phase. Confidence score is set low
-     * (0.25) to communicate that values are approximate placeholders.
-     */
     public MeasurementResponse estimate(User user, EstimateMeasurementRequest request) {
         if (request.getImageId() == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "image_id is required");
 
-        // Validate image belongs to the authenticated user
-        imageRepository.findByIdAndUserId(request.getImageId(), user.getId())
+        Image image = imageRepository.findByIdAndUserId(request.getImageId(), user.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Image not found or does not belong to you"));
 
-        // Resolve height: request → user profile → default
         int height = resolveHeight(request.getHeightCm(), user);
-
-        Measurement m = Measurement.builder()
-                .userId(user.getId())
-                .imageId(request.getImageId())
-                .heightCmUsed(height)
-                .shoulderWidth(round(height * 0.240))
-                .chest(round(height * 0.530))
-                .waist(round(height * 0.440))
-                .hip(round(height * 0.550))
-                .inseam(round(height * 0.470))
-                .confidenceScore(0.25) // Stub — replace with real model output
-                .build();
+        Measurement m = estimateFromAiOrFallback(image, height, user.getId());
 
         if (!preferencesService.shouldSaveMeasurementHistory(user)) {
             return toResponse(m);
@@ -87,6 +73,54 @@ public class MeasurementService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    @SuppressWarnings("unchecked")
+    private Measurement estimateFromAiOrFallback(Image image, int height, Long userId) {
+        try {
+            Map<String, Object> aiResult = aiClient.estimateMeasurements(image.getFilePath(), (double) height);
+            if (aiResult != null) {
+                Map<String, Object> measures = (Map<String, Object>) aiResult.get("measurements");
+                Number confidence = (Number) aiResult.get("confidence_score");
+                if (measures != null && confidence != null) {
+                    return Measurement.builder()
+                            .userId(userId)
+                            .imageId(image.getId())
+                            .heightCmUsed(height)
+                            .shoulderWidth(doubleFromMap(measures, "shoulder_width_cm"))
+                            .chest(doubleFromMap(measures, "chest_cm"))
+                            .waist(doubleFromMap(measures, "waist_cm"))
+                            .hip(doubleFromMap(measures, "hip_cm"))
+                            .inseam(doubleFromMap(measures, "inseam_cm"))
+                            .confidenceScore(confidence.doubleValue())
+                            .build();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("AI measurement estimation failed for image {}, using proportion fallback: {}",
+                    image.getId(), e.getMessage());
+        }
+        return proportionFallback(userId, image.getId(), height);
+    }
+
+    private Measurement proportionFallback(Long userId, Long imageId, int height) {
+        return Measurement.builder()
+                .userId(userId)
+                .imageId(imageId)
+                .heightCmUsed(height)
+                .shoulderWidth(round(height * 0.240))
+                .chest(round(height * 0.530))
+                .waist(round(height * 0.440))
+                .hip(round(height * 0.550))
+                .inseam(round(height * 0.470))
+                .confidenceScore(0.25)
+                .build();
+    }
+
+    private Double doubleFromMap(Map<String, Object> map, String key) {
+        Object val = map.get(key);
+        if (val instanceof Number n) return round(n.doubleValue());
+        return null;
+    }
 
     private int resolveHeight(Integer requestHeight, User user) {
         if (requestHeight != null && requestHeight >= 50 && requestHeight <= 250) return requestHeight;

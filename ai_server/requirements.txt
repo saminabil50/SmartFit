@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+requests
+pillow
+opencv-python
+numpy
+mediapipe
+rembg
+onnxruntime

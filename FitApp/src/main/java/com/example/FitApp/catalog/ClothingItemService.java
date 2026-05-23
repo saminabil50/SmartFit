@@ -1,5 +1,6 @@
 package com.example.FitApp.catalog;
 
+import com.example.FitApp.ai.AiClient;
 import com.example.FitApp.catalog.dto.ClothingItemListResponse;
 import com.example.FitApp.catalog.dto.ClothingItemRequest;
 import com.example.FitApp.catalog.dto.ClothingItemResponse;
@@ -8,6 +9,7 @@ import com.example.FitApp.catalog.dto.SizeChartResponse;
 import com.example.FitApp.preferences.PreferencesService;
 import com.example.FitApp.preferences.dto.UserPreferencesResponse;
 import com.example.FitApp.user.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
@@ -34,6 +36,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ClothingItemService {
@@ -58,6 +61,7 @@ public class ClothingItemService {
     private final ClothingItemRepository repository;
     private final PreferencesService preferencesService;
     private final ObjectMapper objectMapper;
+    private final AiClient aiClient;
 
     public ClothingItemListResponse getItems(String category, String gender, int page, int limit) {
         return getItems(null, category, gender, page, limit);
@@ -253,7 +257,9 @@ public class ClothingItemService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to manage clothing item");
         }
 
-        item.setImageUrl("/uploads/catalog/" + filename);
+        // Best-effort background removal via AI server — falls back to original on any failure.
+        String imageUrl = tryRemoveBackground(catalogDir, filename);
+        item.setImageUrl(imageUrl);
         return toResponse(repository.save(item));
     }
 
@@ -276,6 +282,40 @@ public class ClothingItemService {
                 .availableSizes(sizes)
                 .sizeChart(saved.getSizeChart())
                 .build();
+    }
+
+    // ── AI background removal ─────────────────────────────────────────────────
+
+    /**
+     * Calls the AI server to remove the background from a freshly uploaded catalog image.
+     * Returns the URL for the background-removed PNG on success, or the original image URL
+     * as a fallback if the AI server is unavailable or processing fails.
+     * Never throws — background removal is always best-effort.
+     */
+    private String tryRemoveBackground(Path catalogDir, String originalFilename) {
+        String fallbackUrl = "/uploads/catalog/" + originalFilename;
+        try {
+            String sourcePath = catalogDir.resolve(originalFilename).toString();
+            Map<String, Object> result = aiClient.removeBackground(sourcePath, catalogDir.toString());
+            if (result == null || !"completed".equals(result.get("status"))) {
+                return fallbackUrl;
+            }
+            String outputPath = (String) result.get("output_image_path");
+            if (outputPath == null || outputPath.isBlank()) {
+                return fallbackUrl;
+            }
+            Path uploadsAbsPath = Paths.get(uploadsDir).toAbsolutePath().normalize();
+            Path outputFilePath = Paths.get(outputPath).normalize();
+            if (!outputFilePath.startsWith(uploadsAbsPath)) {
+                log.warn("AI background removal returned a path outside uploads dir: {}", outputPath);
+                return fallbackUrl;
+            }
+            String relative = uploadsAbsPath.relativize(outputFilePath).toString().replace('\\', '/');
+            return "/uploads/" + relative;
+        } catch (Exception e) {
+            log.warn("Background removal failed for {}, keeping original: {}", originalFilename, e.getMessage());
+            return fallbackUrl;
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

@@ -34,7 +34,23 @@
       "Bash(docker exec *)",
       "Bash(node -e \"const b=require\\('bcryptjs'\\);console.log\\(b.hashSync\\('testpass123',10\\)\\)\")",
       "Bash(node -e \"const b=require\\('bcrypt'\\);console.log\\(b.hashSync\\('testpass123',10\\)\\)\")",
-      "Read(//Users/ahmad/.m2/repository/org/springframework/security/spring-security-crypto/7.0.5/**)"
+      "Read(//Users/ahmad/.m2/repository/org/springframework/security/spring-security-crypto/7.0.5/**)",
+      "Bash(python3 *)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(.venv/bin/python *)",
+      "Bash(pkill -f \"uvicorn main:app\")",
+      "Bash(.venv/bin/uvicorn main:app --host 127.0.0.1 --port 9000)",
+      "Bash(identify -format %wx%h /Users/ahmad/AndroidStudioProjects/FitApp/uploads/051262c7-b9fe-405f-9acc-21bb8f0f5e0f.png)",
+      "Bash(xargs cat)",
+      "Bash(./mvnw dependency:tree -q)",
+      "Bash(grep -v \"\\\\$\")",
+      "Bash(grep \"\\\\.class$\")",
+      "Bash(grep -iv \"dollar\\\\|\\\\$\")",
+      "Bash(./mvnw -q -pl . exec:java -Dexec.mainClass=com.example.FitApp.FitAppApplication)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; jar tf {} 2>/dev/null | grep -i \"JsonRaw\\\\|JsonInclude\" | head -5')",
+      "Read(//private/tmp/**)",
+      "Bash(jar xf *)",
+      "Bash(javap -c tools/jackson/databind/introspect/JacksonAnnotationIntrospector.class)"
     ]
   }
 }

@@ -55,7 +55,10 @@ public class SizeRecommendationService {
 
         List<String> fields = relevantFields(item.getCategory(), sizeRows);
         if (fields.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected clothing item does not have a size chart");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Size recommendation is not supported for this item category. "
+                            + "The size chart must include at least one body measurement field "
+                            + "(chest, waist, hip, shoulder width, or inseam).");
         }
 
         List<ScoredSize> scored = sizeRows.stream()
