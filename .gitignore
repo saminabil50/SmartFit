@@ -1,11 +1,36 @@
+# Upload folders
 uploads/*
 !uploads/.gitkeep
+
 backend/uploads/*
 !backend/uploads/.gitkeep
+
 FitApp/uploads/*
 !FitApp/uploads/.gitkeep
+
+# Temp files
 *.tmp
 
+# Gradle
+.gradle/
 SmartFitApp/.gradle/
+
+# Build outputs
+build/
+*/build/
 SmartFitApp/build/
 SmartFitApp/app/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Local machine config
+local.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
