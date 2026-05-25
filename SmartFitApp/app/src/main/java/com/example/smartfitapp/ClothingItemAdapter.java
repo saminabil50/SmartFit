@@ -54,7 +54,7 @@ public class ClothingItemAdapter extends RecyclerView.Adapter<ClothingItemAdapte
         if (item.imageUrl != null && !item.imageUrl.isEmpty()) {
             Glide.with(ctx)
                     .load(ApiClient.fullImageUrl(item.imageUrl))
-                    .centerCrop()
+                    .fitCenter()
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(holder.thumbnail);
         } else {

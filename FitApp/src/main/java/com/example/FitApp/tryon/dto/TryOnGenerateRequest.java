@@ -8,5 +8,4 @@ import lombok.Setter;
 public class TryOnGenerateRequest {
     private Long imageId;
     private Long itemId;
-    private Long measurementId;
 }

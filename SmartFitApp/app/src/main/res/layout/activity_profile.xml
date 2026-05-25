@@ -1,40 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white">
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="40dp">
 
+        <!-- Screen title -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="24dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="20dp"
             android:text="My Profile"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#6750A4" />
+            style="@style/Text.ScreenTitle" />
 
-        <!-- Email (read-only) -->
-        <TextView
+        <!-- Email display card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Email"
-            android:textColor="#888888"
-            android:textSize="12sp" />
-        <TextView
-            android:id="@+id/emailText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:textSize="16sp"
-            android:textColor="#333333" />
+            android:layout_marginBottom="@dimen/large_gap"
+            app:cardCornerRadius="@dimen/card_radius"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/outline_variant"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="@color/surface_variant">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Email address"
+                    style="@style/Text.Label" />
+
+                <TextView
+                    android:id="@+id/emailText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textSize="15sp"
+                    android:textColor="@color/on_surface" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Full Name -->
         <com.google.android.material.textfield.TextInputLayout
@@ -53,21 +73,23 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/card_padding"
+            android:layout_marginBottom="4dp"
             android:text="Gender"
-            android:textColor="#888888"
-            android:textSize="12sp" />
+            style="@style/Text.Label" />
+
         <Spinner
             android:id="@+id/genderSpinner"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="4dp" />
+            android:layout_height="52dp"
+            android:background="@drawable/bg_spinner_outlined"
+            android:layout_marginBottom="@dimen/element_gap" />
 
         <!-- Height -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/element_gap"
             android:hint="Height (cm)"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
@@ -81,7 +103,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/element_gap"
             android:hint="Weight (kg)"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
             <com.google.android.material.textfield.TextInputEditText
@@ -91,26 +113,12 @@
                 android:inputType="numberDecimal" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Preferred Size System -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Preferred Size System"
-            android:textColor="#888888"
-            android:textSize="12sp" />
-        <Spinner
-            android:id="@+id/sizeSystemSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="4dp" />
-
         <!-- Status message -->
         <TextView
             android:id="@+id/statusText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/small_gap"
             android:textSize="13sp"
             android:visibility="gone" />
 
@@ -119,28 +127,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/small_gap"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/saveButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/card_padding"
             android:text="Save Profile"
             android:textAllCaps="false"
             style="@style/Widget.Material3.Button" />
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/large_gap"
+            android:layout_marginBottom="@dimen/element_gap"
+            android:background="@color/divider" />
+
         <Button
             android:id="@+id/deleteButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="32dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginBottom="8dp"
             android:text="Delete Account"
             android:textAllCaps="false"
+            android:textColor="@color/error"
             style="@style/Widget.Material3.Button.OutlinedButton"
-            android:textColor="#B00020" />
+            app:strokeColor="@color/error" />
 
     </LinearLayout>
 </ScrollView>

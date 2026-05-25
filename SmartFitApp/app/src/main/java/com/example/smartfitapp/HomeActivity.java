@@ -1,11 +1,20 @@
 package com.example.smartfitapp;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.smartfitapp.auth.AuthManager;
 import com.example.smartfitapp.model.UserResponse;
@@ -34,15 +43,11 @@ public class HomeActivity extends AppCompatActivity {
 
         TextView welcomeText = findViewById(R.id.welcomeText);
         TextView emailText   = findViewById(R.id.emailText);
-        Button profileButton      = findViewById(R.id.profileButton);
+        ImageButton profileButton = findViewById(R.id.profileButton);
         Button photosButton       = findViewById(R.id.photosButton);
-        Button measurementsButton = findViewById(R.id.measurementsButton);
         Button catalogButton      = findViewById(R.id.catalogButton);
         Button tryOnButton        = findViewById(R.id.tryOnButton);
-        Button sizeRecommendationButton = findViewById(R.id.sizeRecommendationButton);
-        Button preferencesButton  = findViewById(R.id.preferencesButton);
         Button adminCatalogButton = findViewById(R.id.adminCatalogButton);
-        Button logoutButton       = findViewById(R.id.logoutButton);
 
         UserResponse user = authManager.getCurrentUser();
         if (user != null) {
@@ -52,26 +57,86 @@ public class HomeActivity extends AppCompatActivity {
         }
         refreshCurrentUser(adminCatalogButton);
 
-        profileButton.setOnClickListener(v ->
-                startActivity(new Intent(this, ProfileActivity.class)));
+        profileButton.setOnClickListener(this::showProfileMenu);
         photosButton.setOnClickListener(v ->
                 startActivity(new Intent(this, ImageGalleryActivity.class)));
-        measurementsButton.setOnClickListener(v ->
-                startActivity(new Intent(this, MeasurementsActivity.class)));
         catalogButton.setOnClickListener(v ->
                 startActivity(new Intent(this, CatalogActivity.class)));
         tryOnButton.setOnClickListener(v ->
                 startActivity(new Intent(this, TryOnActivity.class)));
-        sizeRecommendationButton.setOnClickListener(v ->
-                startActivity(new Intent(this, SizeRecommendationActivity.class)));
-        preferencesButton.setOnClickListener(v ->
-                startActivity(new Intent(this, PreferencesActivity.class)));
         adminCatalogButton.setOnClickListener(v ->
                 startActivity(new Intent(this, AdminCatalogActivity.class)));
-        logoutButton.setOnClickListener(v -> {
+    }
+
+    private void showProfileMenu(View anchor) {
+        LinearLayout menuLayout = new LinearLayout(this);
+        menuLayout.setOrientation(LinearLayout.VERTICAL);
+        menuLayout.setBackgroundColor(Color.WHITE);
+        int width = dp(180);
+
+        PopupWindow popupWindow = new PopupWindow(
+                menuLayout,
+                width,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                true
+        );
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popupWindow.setOutsideTouchable(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            popupWindow.setElevation(dp(8));
+        }
+
+        TextView profileOption = createProfileMenuItem("My Profile");
+        TextView logoutOption = createProfileMenuItem("Logout");
+        menuLayout.addView(profileOption);
+        menuLayout.addView(logoutOption);
+
+        profileOption.setOnClickListener(v -> {
+            popupWindow.dismiss();
+            startActivity(new Intent(this, ProfileActivity.class));
+        });
+        logoutOption.setOnClickListener(v -> {
+            popupWindow.dismiss();
             authManager.logout();
             goToLogin();
         });
+
+        popupWindow.showAsDropDown(anchor, -width + anchor.getWidth(), dp(6));
+    }
+
+    private TextView createProfileMenuItem(String text) {
+        TextView item = new TextView(this);
+        item.setText(text);
+        item.setTextColor(ContextCompat.getColor(this, R.color.on_surface));
+        item.setTextSize(15);
+        item.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        item.setPadding(dp(16), 0, dp(16), 0);
+        item.setBackgroundColor(Color.WHITE);
+        item.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(48)
+        ));
+        item.setOnHoverListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_HOVER_ENTER) {
+                v.setBackgroundColor(ContextCompat.getColor(this, R.color.surface_variant));
+            } else if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+                v.setBackgroundColor(Color.WHITE);
+            }
+            return false;
+        });
+        item.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                v.setBackgroundColor(ContextCompat.getColor(this, R.color.primary_container));
+            } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
+                v.setBackgroundColor(Color.WHITE);
+            }
+            return false;
+        });
+        return item;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void goToLogin() {

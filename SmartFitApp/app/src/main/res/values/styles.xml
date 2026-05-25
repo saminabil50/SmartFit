@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base style required for dot-notation children to resolve correctly -->
+    <style name="Text" />
+
+    <style name="Text.Brand">
+        <item name="android:textColor">@color/primary_dark</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <style name="Text.ScreenTitle">
+        <item name="android:textColor">@color/primary_dark</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
+    <style name="Text.SectionTitle">
+        <item name="android:textColor">@color/on_surface</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">17sp</item>
+    </style>
+
+    <style name="Text.Label">
+        <item name="android:textColor">@color/on_surface_variant</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="Text.Error">
+        <item name="android:textColor">@color/error</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="Text.Link">
+        <item name="android:textColor">@color/secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="Text.Empty">
+        <item name="android:textColor">@color/on_surface_variant</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="Text.Success">
+        <item name="android:textColor">@color/success</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="Text.Warning">
+        <item name="android:textColor">@color/warning</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+</resources>

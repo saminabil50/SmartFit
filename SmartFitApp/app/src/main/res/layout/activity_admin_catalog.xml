@@ -1,86 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="@color/white">
+    android:background="@color/background"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="Admin Catalog"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#6750A4" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Search by name"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/searchButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Search"
-                android:textAllCaps="false"
-                style="@style/Widget.Material3.Button" />
-
-            <Button
-                android:id="@+id/newButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
-                android:text="New Item"
-                android:textAllCaps="false"
-                style="@style/Widget.Material3.Button.OutlinedButton" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/itemsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical" />
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingEnd="@dimen/screen_padding"
+        android:paddingBottom="40dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp"
-            android:text="Item Details"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#1C1B1F" />
+            android:layout_marginBottom="@dimen/card_padding"
+            android:text="Admin Catalog"
+            style="@style/Text.ScreenTitle" />
 
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- Mode toggle -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            android:layout_marginBottom="@dimen/large_gap"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/updateModeButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_weight="1"
+                android:text="Update Item"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/addModeButton"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginStart="@dimen/small_gap"
+                android:layout_weight="1"
+                android:text="Add Item"
+                android:textAllCaps="false" />
+
+        </LinearLayout>
+
+        <!-- Current Available section (for update mode) -->
+        <LinearLayout
+            android:id="@+id/currentAvailableSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/large_gap"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/element_gap"
+                android:text="Current Available"
+                style="@style/Text.SectionTitle" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/itemsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+
+        <!-- Section: Item Details -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/element_gap"
+            android:text="Item Details"
+            style="@style/Text.SectionTitle" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/nameInput"
                 android:layout_width="match_parent"
@@ -88,205 +94,140 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Description"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            android:layout_marginTop="@dimen/element_gap"
+            android:hint="Description">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/descriptionInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minLines="2"
-                android:inputType="textMultiLine" />
+                android:inputType="textMultiLine"
+                android:minLines="2" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/card_padding"
+            android:layout_marginBottom="4dp"
             android:text="Category"
-            android:textColor="#888888"
-            android:textSize="12sp" />
+            style="@style/Text.Label" />
+
         <Spinner
             android:id="@+id/categorySpinner"
             android:layout_width="match_parent"
-            android:layout_height="48dp" />
+            android:layout_height="52dp"
+            android:background="@drawable/bg_spinner_outlined" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/element_gap"
+            android:layout_marginBottom="4dp"
             android:text="Gender"
-            android:textColor="#888888"
-            android:textSize="12sp" />
+            style="@style/Text.Label" />
+
         <Spinner
             android:id="@+id/genderSpinner"
             android:layout_width="match_parent"
-            android:layout_height="48dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Size System"
-            android:textColor="#888888"
-            android:textSize="12sp" />
-        <Spinner
-            android:id="@+id/sizeSystemSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="48dp" />
+            android:layout_height="52dp"
+            android:background="@drawable/bg_spinner_outlined" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Brand"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            android:layout_marginTop="@dimen/element_gap"
+            android:hint="Brand">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/brandInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <!-- Image picker -->
+        <TextView
+            android:id="@+id/selectedImageText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Available sizes, comma separated"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/sizesInput"
+            android:layout_marginTop="@dimen/card_padding"
+            android:textColor="@color/on_surface_variant"
+            android:textSize="13sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/selectedImageCard"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_marginTop="@dimen/small_gap"
+            android:visibility="gone"
+            app:cardCornerRadius="@dimen/small_radius"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="@color/image_placeholder">
+
+            <ImageView
+                android:id="@+id/selectedImagePreview"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:contentDescription="Selected catalog image"
+                android:padding="8dp"
+                android:scaleType="fitCenter" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Section: Size Chart -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/large_gap"
+            android:layout_marginBottom="@dimen/card_padding"
+            android:background="@color/divider" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/element_gap"
+            android:text="Size Chart"
+            style="@style/Text.SectionTitle" />
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Base price"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+            android:hint="Sizes (comma separated)">
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/priceInput"
+                android:id="@+id/chartSizesInput"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="numberDecimal" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Currency"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/currencyInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Image URL"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/imageUrlInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <CheckBox
             android:id="@+id/activeCheckbox"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Active" />
+            android:layout_height="@dimen/touch_target"
+            android:layout_marginTop="@dimen/element_gap"
+            android:text="Available"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp" />
 
         <Button
             android:id="@+id/saveButton"
+            style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/element_gap"
             android:text="Save Item"
-            android:textAllCaps="false"
-            style="@style/Widget.Material3.Button" />
-
-        <Button
-            android:id="@+id/deactivateButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Deactivate Item"
-            android:textAllCaps="false"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp"
-            android:text="Catalog Image"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#1C1B1F" />
-
-        <Button
-            android:id="@+id/chooseImageButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Choose Image"
-            android:textAllCaps="false"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-
-        <Button
-            android:id="@+id/uploadImageButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Upload Image"
-            android:textAllCaps="false"
-            style="@style/Widget.Material3.Button" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="8dp"
-            android:text="Size Chart JSON"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#1C1B1F" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Size chart rows"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/sizeChartInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minLines="5"
-                android:gravity="top"
-                android:inputType="textMultiLine" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <Button
-            android:id="@+id/saveSizeChartButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Save Size Chart"
-            android:textAllCaps="false"
-            style="@style/Widget.Material3.Button" />
+            android:textAllCaps="false" />
 
         <TextView
             android:id="@+id/statusText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/element_gap"
             android:textSize="13sp"
             android:visibility="gone" />
 
@@ -295,7 +236,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/small_gap"
             android:visibility="gone" />
 
     </LinearLayout>

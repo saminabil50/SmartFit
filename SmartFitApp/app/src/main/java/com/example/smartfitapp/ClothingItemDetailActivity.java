@@ -44,7 +44,7 @@ public class ClothingItemDetailActivity extends AppCompatActivity {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(ApiClient.fullImageUrl(imageUrl))
-                    .centerCrop()
+                    .fitCenter()
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .into(itemImage);
         }

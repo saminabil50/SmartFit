@@ -4,54 +4,68 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/background">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#6750A4"
         app:title="Virtual Try-On"
-        app:titleTextColor="@android:color/white" />
+        style="@style/SmartFit.Toolbar" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingEnd="@dimen/screen_padding"
+            android:paddingTop="@dimen/card_padding"
+            android:paddingBottom="32dp">
 
+            <!-- Section: Your photo -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Generate Preview"
-                android:textColor="#1C1B1F"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:text="Your Photo"
+                style="@style/Text.SectionTitle"
+                android:layout_marginBottom="@dimen/element_gap" />
 
-            <ImageView
-                android:id="@+id/selectedImagePreview"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="260dp"
-                android:layout_marginTop="16dp"
-                android:background="#EEEEEE"
-                android:contentDescription="Selected try-on photo"
-                android:scaleType="centerCrop" />
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/outline_variant"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/image_placeholder">
 
+                <ImageView
+                    android:id="@+id/selectedImagePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="260dp"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="Selected try-on photo"
+                    android:scaleType="fitCenter" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Photo source buttons -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/element_gap"
                 android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/cameraButton"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/button_height"
                     android:layout_weight="1"
                     android:text="Take Photo"
                     android:textAllCaps="false" />
@@ -60,57 +74,44 @@
                     android:id="@+id/galleryButton"
                     style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_height="@dimen/button_height"
+                    android:layout_marginStart="@dimen/small_gap"
                     android:layout_weight="1"
                     android:text="Choose Photo"
                     android:textAllCaps="false" />
             </LinearLayout>
 
+            <!-- Section: Choose clothing -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Choose clothing"
-                android:textColor="#49454F"
-                android:textSize="14sp" />
+                android:layout_marginTop="@dimen/large_gap"
+                android:layout_marginBottom="4dp"
+                android:text="Choose Clothing"
+                style="@style/Text.SectionTitle" />
 
             <TextView
                 android:id="@+id/selectedItemText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginBottom="@dimen/element_gap"
                 android:text="No item selected"
-                android:textColor="#666666"
+                android:textColor="@color/on_surface_variant"
                 android:textSize="13sp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/clothingRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
-                android:layout_marginTop="8dp"
+                android:layout_height="208dp"
                 android:nestedScrollingEnabled="false" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Measurement"
-                android:textColor="#49454F"
-                android:textSize="14sp" />
-
-            <Spinner
-                android:id="@+id/measurementSpinner"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="4dp" />
-
+            <!-- Generate button -->
             <Button
                 android:id="@+id/generateButton"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginTop="@dimen/card_padding"
                 android:enabled="false"
                 android:text="Generate Try-On"
                 android:textAllCaps="false" />
@@ -120,16 +121,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/card_padding"
                 android:visibility="gone" />
 
+            <!-- Section: Result -->
             <TextView
                 android:id="@+id/resultTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:textColor="#1C1B1F"
-                android:textSize="18sp"
+                android:layout_marginTop="@dimen/large_gap"
+                android:textColor="@color/on_surface"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
 
@@ -137,55 +139,29 @@
                 android:id="@+id/resultImage"
                 android:layout_width="match_parent"
                 android:layout_height="320dp"
-                android:layout_marginTop="8dp"
-                android:background="#EEEEEE"
+                android:layout_marginTop="@dimen/element_gap"
+                android:adjustViewBounds="true"
+                android:background="@color/image_placeholder"
                 android:contentDescription="Generated try-on result"
-                android:scaleType="centerCrop"
+                android:scaleType="fitCenter"
                 android:visibility="gone" />
 
             <TextView
                 android:id="@+id/warningText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="#7D5260"
-                android:textSize="13sp"
+                android:layout_marginTop="@dimen/small_gap"
+                style="@style/Text.Warning"
                 android:visibility="gone" />
 
             <TextView
                 android:id="@+id/fittingSummaryText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textColor="#386A20"
+                android:layout_marginTop="@dimen/element_gap"
+                style="@style/Text.Success"
                 android:textSize="14sp"
                 android:visibility="gone" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:text="History"
-                android:textColor="#1C1B1F"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/emptyHistoryText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="No try-on results yet"
-                android:textColor="#777777"
-                android:visibility="gone" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/historyRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:nestedScrollingEnabled="false" />
 
         </LinearLayout>
     </ScrollView>

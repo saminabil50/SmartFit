@@ -12,6 +12,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.smartfitapp.auth.AuthManager;
 import com.example.smartfitapp.model.MessageResponse;
@@ -26,11 +27,10 @@ import retrofit2.Response;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private static final String[] GENDERS = {"", "male", "female", "other", "prefer_not_to_say"};
-    private static final String[] SIZE_SYSTEMS = {"", "US", "UK", "EU", "INT"};
+    private static final String[] GENDERS = {"male", "female"};
 
     private EditText fullNameInput, heightInput, weightInput;
-    private Spinner genderSpinner, sizeSystemSpinner;
+    private Spinner genderSpinner;
     private Button saveButton, deleteButton;
     private TextView emailText, statusText;
     private ProgressBar progressBar;
@@ -49,7 +49,6 @@ public class ProfileActivity extends AppCompatActivity {
         heightInput    = findViewById(R.id.heightInput);
         weightInput    = findViewById(R.id.weightInput);
         genderSpinner  = findViewById(R.id.genderSpinner);
-        sizeSystemSpinner = findViewById(R.id.sizeSystemSpinner);
         saveButton     = findViewById(R.id.saveButton);
         deleteButton   = findViewById(R.id.deleteButton);
         statusText     = findViewById(R.id.statusText);
@@ -59,11 +58,6 @@ public class ProfileActivity extends AppCompatActivity {
                 android.R.layout.simple_spinner_item, GENDERS);
         genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         genderSpinner.setAdapter(genderAdapter);
-
-        ArrayAdapter<String> sizeAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, SIZE_SYSTEMS);
-        sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sizeSystemSpinner.setAdapter(sizeAdapter);
 
         saveButton.setOnClickListener(v -> saveProfile());
         deleteButton.setOnClickListener(v -> confirmDeleteAccount());
@@ -98,7 +92,6 @@ public class ProfileActivity extends AppCompatActivity {
         if (user.heightCm != null) heightInput.setText(String.valueOf(user.heightCm));
         if (user.weightKg != null) weightInput.setText(String.valueOf(user.weightKg));
         setSpinnerSelection(genderSpinner, GENDERS, user.gender);
-        setSpinnerSelection(sizeSystemSpinner, SIZE_SYSTEMS, user.preferredSizeSystem);
     }
 
     private void setSpinnerSelection(Spinner spinner, String[] options, String value) {
@@ -128,9 +121,6 @@ public class ProfileActivity extends AppCompatActivity {
             try { request.weightKg = Double.parseDouble(weightStr); }
             catch (NumberFormatException e) { showStatus("Invalid weight value", true); return; }
         }
-
-        String sizeSystem = (String) sizeSystemSpinner.getSelectedItem();
-        if (sizeSystem != null && !sizeSystem.isEmpty()) request.preferredSizeSystem = sizeSystem;
 
         setLoading(true);
         ApiClient.get().updateProfile(authManager.getBearerToken(), request).enqueue(new Callback<UpdateProfileResponse>() {
@@ -191,7 +181,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void showStatus(String message, boolean isError) {
         statusText.setText(message);
-        statusText.setTextColor(isError ? 0xFFB00020 : 0xFF388E3C);
+        statusText.setTextColor(ContextCompat.getColor(this, isError ? R.color.error : R.color.success));
         statusText.setVisibility(View.VISIBLE);
     }
 

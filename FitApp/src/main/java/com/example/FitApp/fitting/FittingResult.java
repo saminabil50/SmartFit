@@ -29,10 +29,7 @@ public class FittingResult {
     @Column(nullable = false)
     private Long itemId;
 
-    private Long measurementId;
-    private Long recommendationId;
     private Long tryonId;
-    private String recommendedSize;
 
     @Column(nullable = false)
     private String fitStatus;

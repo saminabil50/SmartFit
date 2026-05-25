@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -16,25 +17,26 @@ import android.widget.TextView;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.smartfitapp.auth.AuthManager;
 import com.example.smartfitapp.model.ClothingItem;
 import com.example.smartfitapp.model.ClothingItemListResponse;
 import com.example.smartfitapp.model.ClothingItemRequest;
 import com.example.smartfitapp.model.ClothingItemSaveResponse;
-import com.example.smartfitapp.model.MessageResponse;
 import com.example.smartfitapp.model.SizeChartUpdateRequest;
 import com.example.smartfitapp.model.SizeChartUpdateResponse;
 import com.example.smartfitapp.network.ApiClient;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,23 +49,30 @@ import retrofit2.Response;
 
 public class AdminCatalogActivity extends AppCompatActivity {
 
-    private static final int PAGE_SIZE = 20;
+    private static final int PAGE_SIZE = 100;
     private static final String[] CATEGORIES = {"tshirt", "shirt", "hoodie", "jacket", "sweater", "pants", "jeans", "shorts", "skirt", "dress", "shoes", "accessories"};
     private static final String[] GENDERS = {"male", "female", "unisex"};
-    private static final String[] SIZE_SYSTEMS = {"US", "UK", "EU", "INT"};
+    private static final String DEFAULT_SIZE_SYSTEM = "INT";
 
     private final Gson gson = new Gson();
+    private final List<ClothingItem> currentItems = new ArrayList<>();
+
     private AuthManager authManager;
+    private TryOnClothingAdapter currentItemsAdapter;
     private Long selectedItemId;
     private Uri selectedImageUri;
     private String selectedImageMimeType = "image/jpeg";
+    private boolean addMode = true;
 
-    private LinearLayout itemsContainer;
-    private EditText searchInput, nameInput, descriptionInput, brandInput, sizesInput, priceInput, currencyInput, imageUrlInput, sizeChartInput;
-    private Spinner categorySpinner, genderSpinner, sizeSystemSpinner;
+    private EditText nameInput, descriptionInput, brandInput;
+    private EditText chartSizesInput;
+    private Spinner categorySpinner, genderSpinner;
     private CheckBox activeCheckbox;
-    private Button searchButton, newButton, saveButton, deactivateButton, chooseImageButton, uploadImageButton, saveSizeChartButton;
-    private TextView statusText;
+    private LinearLayout currentAvailableSection;
+    private Button addModeButton, updateModeButton, saveButton;
+    private TextView statusText, selectedImageText;
+    private View selectedImageCard;
+    private ImageView selectedImagePreview;
     private ProgressBar progressBar;
 
     private final ActivityResultLauncher<Intent> imagePicker = registerForActivityResult(
@@ -73,7 +82,8 @@ public class AdminCatalogActivity extends AppCompatActivity {
                     selectedImageUri = result.getData().getData();
                     String type = getContentResolver().getType(selectedImageUri);
                     selectedImageMimeType = type != null ? type : "image/jpeg";
-                    uploadImageButton.setEnabled(selectedItemId != null);
+                    selectedImageText.setText("Image selected. It will upload when you save the item.");
+                    showSelectedImage(selectedImageUri);
                     showStatus("Image selected", false);
                 }
             }
@@ -90,43 +100,36 @@ public class AdminCatalogActivity extends AppCompatActivity {
             return;
         }
 
-        itemsContainer = findViewById(R.id.itemsContainer);
-        searchInput = findViewById(R.id.searchInput);
         nameInput = findViewById(R.id.nameInput);
         descriptionInput = findViewById(R.id.descriptionInput);
         brandInput = findViewById(R.id.brandInput);
-        sizesInput = findViewById(R.id.sizesInput);
-        priceInput = findViewById(R.id.priceInput);
-        currencyInput = findViewById(R.id.currencyInput);
-        imageUrlInput = findViewById(R.id.imageUrlInput);
-        sizeChartInput = findViewById(R.id.sizeChartInput);
+        chartSizesInput = findViewById(R.id.chartSizesInput);
         categorySpinner = findViewById(R.id.categorySpinner);
         genderSpinner = findViewById(R.id.genderSpinner);
-        sizeSystemSpinner = findViewById(R.id.sizeSystemSpinner);
         activeCheckbox = findViewById(R.id.activeCheckbox);
-        searchButton = findViewById(R.id.searchButton);
-        newButton = findViewById(R.id.newButton);
+        currentAvailableSection = findViewById(R.id.currentAvailableSection);
+        addModeButton = findViewById(R.id.addModeButton);
+        updateModeButton = findViewById(R.id.updateModeButton);
         saveButton = findViewById(R.id.saveButton);
-        deactivateButton = findViewById(R.id.deactivateButton);
-        chooseImageButton = findViewById(R.id.chooseImageButton);
-        uploadImageButton = findViewById(R.id.uploadImageButton);
-        saveSizeChartButton = findViewById(R.id.saveSizeChartButton);
         statusText = findViewById(R.id.statusText);
+        selectedImageText = findViewById(R.id.selectedImageText);
+        selectedImageCard = findViewById(R.id.selectedImageCard);
+        selectedImagePreview = findViewById(R.id.selectedImagePreview);
         progressBar = findViewById(R.id.progressBar);
 
         bindSpinner(categorySpinner, CATEGORIES);
         bindSpinner(genderSpinner, GENDERS);
-        bindSpinner(sizeSystemSpinner, SIZE_SYSTEMS);
 
-        searchButton.setOnClickListener(v -> loadItems());
-        newButton.setOnClickListener(v -> clearForm());
+        RecyclerView itemsRecyclerView = findViewById(R.id.itemsRecyclerView);
+        currentItemsAdapter = new TryOnClothingAdapter(currentItems, item -> loadItem(item.id));
+        itemsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        itemsRecyclerView.setAdapter(currentItemsAdapter);
+
+        addModeButton.setOnClickListener(v -> startAddMode());
+        updateModeButton.setOnClickListener(v -> startUpdateMode());
         saveButton.setOnClickListener(v -> saveItem());
-        deactivateButton.setOnClickListener(v -> deactivateItem());
-        chooseImageButton.setOnClickListener(v -> chooseImage());
-        uploadImageButton.setOnClickListener(v -> uploadImage());
-        saveSizeChartButton.setOnClickListener(v -> saveSizeChart());
 
-        clearForm();
+        showInitialMode();
         loadItems();
     }
 
@@ -138,15 +141,15 @@ public class AdminCatalogActivity extends AppCompatActivity {
 
     private void loadItems() {
         setLoading(true);
-        String search = searchInput.getText().toString().trim();
-        ApiClient.get().getAdminClothingItems(authManager.getBearerToken(), null, null, null, null,
-                        search.isEmpty() ? null : search, 0, PAGE_SIZE)
+        ApiClient.get().getAdminClothingItems(authManager.getBearerToken(), null, null, null, true, null, 0, PAGE_SIZE)
                 .enqueue(new Callback<ClothingItemListResponse>() {
                     @Override
                     public void onResponse(Call<ClothingItemListResponse> call, Response<ClothingItemListResponse> response) {
                         setLoading(false);
-                        if (response.isSuccessful() && response.body() != null) {
-                            renderItems(response.body().items);
+                        if (response.isSuccessful() && response.body() != null && response.body().items != null) {
+                            currentItems.clear();
+                            currentItems.addAll(response.body().items);
+                            currentItemsAdapter.notifyDataSetChanged();
                         } else if (response.code() == 401) {
                             authManager.logout();
                             goToLogin();
@@ -163,24 +166,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
                         showStatus("Network error: " + t.getMessage(), true);
                     }
                 });
-    }
-
-    private void renderItems(List<ClothingItem> items) {
-        itemsContainer.removeAllViews();
-        if (items == null || items.isEmpty()) {
-            TextView empty = new TextView(this);
-            empty.setText("No catalog items found");
-            itemsContainer.addView(empty);
-            return;
-        }
-        for (ClothingItem item : items) {
-            Button button = new Button(this);
-            String status = Boolean.FALSE.equals(item.isActive) ? "inactive" : "active";
-            button.setText(item.id + " - " + item.name + " (" + status + ")");
-            button.setAllCaps(false);
-            button.setOnClickListener(v -> loadItem(item.id));
-            itemsContainer.addView(button);
-        }
     }
 
     private void loadItem(Long itemId) {
@@ -206,24 +191,43 @@ public class AdminCatalogActivity extends AppCompatActivity {
     }
 
     private void populateForm(ClothingItem item) {
+        addMode = false;
         selectedItemId = item.id;
+        selectedImageUri = null;
         nameInput.setText(value(item.name));
         descriptionInput.setText(value(item.description));
         brandInput.setText(value(item.brand));
-        sizesInput.setText(item.availableSizes == null ? "" : String.join(",", item.availableSizes));
-        priceInput.setText(item.basePrice == null ? "" : String.valueOf(item.basePrice));
-        currencyInput.setText(value(item.currency));
-        imageUrlInput.setText(value(item.imageUrl));
-        sizeChartInput.setText(item.sizeChart == null ? "" : gson.toJson(item.sizeChart));
         activeCheckbox.setChecked(!Boolean.FALSE.equals(item.isActive));
+        selectedImageText.setText(item.imageUrl == null || item.imageUrl.isBlank()
+                ? "No catalog image uploaded"
+                : "Current image is saved.");
+        if (item.imageUrl == null || item.imageUrl.isBlank()) {
+            hideSelectedImage();
+        } else {
+            showSelectedImage(ApiClient.fullImageUrl(item.imageUrl));
+        }
         setSpinner(categorySpinner, CATEGORIES, item.category);
         setSpinner(genderSpinner, GENDERS, item.gender);
-        setSpinner(sizeSystemSpinner, SIZE_SYSTEMS, item.sizeSystem);
-        deactivateButton.setEnabled(true);
-        chooseImageButton.setEnabled(true);
-        uploadImageButton.setEnabled(selectedImageUri != null);
-        saveSizeChartButton.setEnabled(true);
+        populateSizeChart(item);
+        currentAvailableSection.setVisibility(View.VISIBLE);
+        currentItemsAdapter.setSelectedItemId(item.id);
         showStatus("Editing item " + item.id, false);
+    }
+
+    private void startAddMode() {
+        addMode = true;
+        currentAvailableSection.setVisibility(View.GONE);
+        clearForm();
+        chooseImage();
+    }
+
+    private void startUpdateMode() {
+        addMode = false;
+        currentAvailableSection.setVisibility(View.VISIBLE);
+        selectedImageUri = null;
+        selectedImageText.setText("Select an item from Current Available to edit it.");
+        currentItemsAdapter.setSelectedItemId(selectedItemId);
+        showStatus("Select an item to update", false);
     }
 
     private void clearForm() {
@@ -232,35 +236,43 @@ public class AdminCatalogActivity extends AppCompatActivity {
         nameInput.setText("");
         descriptionInput.setText("");
         brandInput.setText("");
-        sizesInput.setText("");
-        priceInput.setText("");
-        currencyInput.setText("JOD");
-        imageUrlInput.setText("");
-        sizeChartInput.setText("[{\"size\":\"M\",\"chest_cm_min\":94,\"chest_cm_max\":102,\"waist_cm_min\":80,\"waist_cm_max\":88}]");
+        chartSizesInput.setText("S,M,L,XL");
         activeCheckbox.setChecked(true);
-        setSpinner(sizeSystemSpinner, SIZE_SYSTEMS, "INT");
-        deactivateButton.setEnabled(false);
-        chooseImageButton.setEnabled(false);
-        uploadImageButton.setEnabled(false);
-        saveSizeChartButton.setEnabled(false);
-        showStatus("Creating new item", false);
+        selectedImageText.setText("Choose an image, fill the fields, then Save Item.");
+        hideSelectedImage();
+        currentItemsAdapter.setSelectedItemId(null);
+        showStatus("Adding new item", false);
+    }
+
+    private void showInitialMode() {
+        addMode = false;
+        selectedItemId = null;
+        selectedImageUri = null;
+        currentAvailableSection.setVisibility(View.GONE);
+        clearForm();
+        selectedImageText.setText("Choose Add Item to upload a new catalog image, or Update Item to edit an existing item.");
+        hideSelectedImage();
+        showStatus("Choose Add Item or Update Item", false);
     }
 
     private void saveItem() {
-        ClothingItemRequest request = buildItemRequest();
+        List<Map<String, Object>> sizeChart = buildSizeChartRows();
+        if (sizeChart == null) return;
+
+        ClothingItemRequest request = buildItemRequest(sizeChart);
         if (request == null) return;
+
         setLoading(true);
         if (selectedItemId == null) {
             ApiClient.get().createAdminClothingItem(authManager.getBearerToken(), request)
                     .enqueue(new Callback<ClothingItem>() {
                         @Override
                         public void onResponse(Call<ClothingItem> call, Response<ClothingItem> response) {
-                            setLoading(false);
                             if (response.isSuccessful() && response.body() != null) {
-                                populateForm(response.body());
-                                loadItems();
-                                showStatus("Clothing item created successfully", false);
+                                selectedItemId = response.body().id;
+                                saveSizeChartThenImage(sizeChart, "Clothing item created successfully");
                             } else {
+                                setLoading(false);
                                 showStatus(parseError(response), true);
                             }
                         }
@@ -276,12 +288,10 @@ public class AdminCatalogActivity extends AppCompatActivity {
                     .enqueue(new Callback<ClothingItemSaveResponse>() {
                         @Override
                         public void onResponse(Call<ClothingItemSaveResponse> call, Response<ClothingItemSaveResponse> response) {
-                            setLoading(false);
-                            if (response.isSuccessful() && response.body() != null) {
-                                if (response.body().item != null) populateForm(response.body().item);
-                                loadItems();
-                                showStatus(response.body().message, false);
+                            if (response.isSuccessful()) {
+                                saveSizeChartThenImage(sizeChart, "Clothing item saved successfully");
                             } else {
+                                setLoading(false);
                                 showStatus(parseError(response), true);
                             }
                         }
@@ -295,18 +305,10 @@ public class AdminCatalogActivity extends AppCompatActivity {
         }
     }
 
-    private ClothingItemRequest buildItemRequest() {
+    private ClothingItemRequest buildItemRequest(List<Map<String, Object>> sizeChart) {
         String name = nameInput.getText().toString().trim();
         if (name.isEmpty()) {
             showStatus("Name is required", true);
-            return null;
-        }
-        List<String> sizes = new ArrayList<>();
-        for (String size : sizesInput.getText().toString().split(",")) {
-            if (!size.trim().isEmpty()) sizes.add(size.trim());
-        }
-        if (sizes.isEmpty()) {
-            showStatus("Available sizes are required", true);
             return null;
         }
 
@@ -316,58 +318,56 @@ public class AdminCatalogActivity extends AppCompatActivity {
         request.category = (String) categorySpinner.getSelectedItem();
         request.gender = (String) genderSpinner.getSelectedItem();
         request.brand = textOrNull(brandInput);
-        request.sizeSystem = (String) sizeSystemSpinner.getSelectedItem();
-        request.availableSizes = sizes;
-        request.currency = textOrNull(currencyInput);
-        request.imageUrl = textOrNull(imageUrlInput);
+        request.sizeSystem = DEFAULT_SIZE_SYSTEM;
+        request.availableSizes = extractSizeLabels();
         request.isActive = activeCheckbox.isChecked();
-
-        String price = priceInput.getText().toString().trim();
-        if (!price.isEmpty()) {
-            try {
-                request.basePrice = Double.parseDouble(price);
-            } catch (NumberFormatException e) {
-                showStatus("Invalid price", true);
-                return null;
-            }
-        }
         return request;
     }
 
-    private void deactivateItem() {
-        if (selectedItemId == null) return;
-        setLoading(true);
-        ApiClient.get().deactivateAdminClothingItem(authManager.getBearerToken(), selectedItemId)
-                .enqueue(new Callback<MessageResponse>() {
+    private List<Map<String, Object>> buildSizeChartRows() {
+        List<String> sizes = extractSizeLabels();
+        if (sizes.isEmpty()) {
+            showStatus("At least one size is required", true);
+            return null;
+        }
+
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (String size : sizes) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("size", size);
+            rows.add(row);
+        }
+        return rows;
+    }
+
+    private void saveSizeChartThenImage(List<Map<String, Object>> sizeChart, String successMessage) {
+        SizeChartUpdateRequest request = new SizeChartUpdateRequest();
+        request.sizeChart = sizeChart;
+        ApiClient.get().updateAdminSizeChart(authManager.getBearerToken(), selectedItemId, request)
+                .enqueue(new Callback<SizeChartUpdateResponse>() {
                     @Override
-                    public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
-                        setLoading(false);
+                    public void onResponse(Call<SizeChartUpdateResponse> call, Response<SizeChartUpdateResponse> response) {
                         if (response.isSuccessful()) {
-                            activeCheckbox.setChecked(false);
-                            loadItems();
-                            showStatus("Clothing item deactivated successfully", false);
+                            uploadSelectedImageThenFinish(successMessage);
                         } else {
+                            setLoading(false);
                             showStatus(parseError(response), true);
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<MessageResponse> call, Throwable t) {
+                    public void onFailure(Call<SizeChartUpdateResponse> call, Throwable t) {
                         setLoading(false);
                         showStatus("Network error: " + t.getMessage(), true);
                     }
                 });
     }
 
-    private void chooseImage() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        imagePicker.launch(intent);
-    }
-
-    private void uploadImage() {
-        if (selectedItemId == null || selectedImageUri == null) return;
-        setLoading(true);
+    private void uploadSelectedImageThenFinish(String successMessage) {
+        if (selectedImageUri == null) {
+            finishSave(successMessage);
+            return;
+        }
         try {
             byte[] bytes = readBytes(selectedImageUri);
             RequestBody reqFile = RequestBody.create(bytes, MediaType.parse(selectedImageMimeType));
@@ -376,12 +376,11 @@ public class AdminCatalogActivity extends AppCompatActivity {
                     .enqueue(new Callback<ClothingItemSaveResponse>() {
                         @Override
                         public void onResponse(Call<ClothingItemSaveResponse> call, Response<ClothingItemSaveResponse> response) {
-                            setLoading(false);
-                            if (response.isSuccessful() && response.body() != null) {
-                                if (response.body().item != null) populateForm(response.body().item);
-                                loadItems();
-                                showStatus(response.body().message, false);
+                            if (response.isSuccessful()) {
+                                selectedImageUri = null;
+                                finishSave(successMessage);
                             } else {
+                                setLoading(false);
                                 showStatus(parseError(response), true);
                             }
                         }
@@ -398,38 +397,44 @@ public class AdminCatalogActivity extends AppCompatActivity {
         }
     }
 
-    private void saveSizeChart() {
-        if (selectedItemId == null) return;
-        try {
-            Type type = new TypeToken<List<Map<String, Object>>>() {}.getType();
-            SizeChartUpdateRequest request = new SizeChartUpdateRequest();
-            request.sizeChart = gson.fromJson(sizeChartInput.getText().toString(), type);
-            setLoading(true);
-            ApiClient.get().updateAdminSizeChart(authManager.getBearerToken(), selectedItemId, request)
-                    .enqueue(new Callback<SizeChartUpdateResponse>() {
-                        @Override
-                        public void onResponse(Call<SizeChartUpdateResponse> call, Response<SizeChartUpdateResponse> response) {
-                            setLoading(false);
-                            if (response.isSuccessful() && response.body() != null) {
-                                if (response.body().availableSizes != null) {
-                                    sizesInput.setText(String.join(",", response.body().availableSizes));
-                                }
-                                showStatus(response.body().message, false);
-                                loadItem(selectedItemId);
-                            } else {
-                                showStatus(parseError(response), true);
-                            }
-                        }
+    private void finishSave(String successMessage) {
+        setLoading(false);
+        showStatus(successMessage, false);
+        loadItems();
+        if (selectedItemId != null) loadItem(selectedItemId);
+    }
 
-                        @Override
-                        public void onFailure(Call<SizeChartUpdateResponse> call, Throwable t) {
-                            setLoading(false);
-                            showStatus("Network error: " + t.getMessage(), true);
-                        }
-                    });
-        } catch (Exception e) {
-            showStatus("Invalid size chart JSON", true);
+    private void chooseImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        imagePicker.launch(intent);
+    }
+
+    private void showSelectedImage(Object imageSource) {
+        selectedImageCard.setVisibility(View.VISIBLE);
+        Glide.with(this)
+                .load(imageSource)
+                .fitCenter()
+                .into(selectedImagePreview);
+    }
+
+    private void hideSelectedImage() {
+        selectedImageCard.setVisibility(View.GONE);
+        selectedImagePreview.setImageDrawable(null);
+    }
+
+    private void populateSizeChart(ClothingItem item) {
+        List<String> sizes = item.availableSizes != null ? item.availableSizes : List.of();
+        chartSizesInput.setText(String.join(",", sizes));
+    }
+
+    private List<String> extractSizeLabels() {
+        List<String> sizes = new ArrayList<>();
+        for (String size : chartSizesInput.getText().toString().split(",")) {
+            String trimmed = size.trim();
+            if (!trimmed.isEmpty()) sizes.add(trimmed);
         }
+        return sizes;
     }
 
     private byte[] readBytes(Uri uri) throws IOException {
@@ -446,12 +451,13 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         saveButton.setEnabled(!loading);
-        searchButton.setEnabled(!loading);
+        addModeButton.setEnabled(!loading);
+        updateModeButton.setEnabled(!loading);
     }
 
     private void showStatus(String message, boolean isError) {
         statusText.setText(message == null ? "" : message);
-        statusText.setTextColor(isError ? 0xFFB00020 : 0xFF388E3C);
+        statusText.setTextColor(ContextCompat.getColor(this, isError ? R.color.error : R.color.success));
         statusText.setVisibility(View.VISIBLE);
     }
 

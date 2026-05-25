@@ -6,8 +6,6 @@ import com.example.FitApp.catalog.dto.ClothingItemRequest;
 import com.example.FitApp.catalog.dto.ClothingItemResponse;
 import com.example.FitApp.catalog.dto.SizeChartRequest;
 import com.example.FitApp.catalog.dto.SizeChartResponse;
-import com.example.FitApp.preferences.PreferencesService;
-import com.example.FitApp.preferences.dto.UserPreferencesResponse;
 import com.example.FitApp.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +57,6 @@ public class ClothingItemService {
     private String uploadsDir;
 
     private final ClothingItemRepository repository;
-    private final PreferencesService preferencesService;
     private final ObjectMapper objectMapper;
     private final AiClient aiClient;
 
@@ -68,27 +65,7 @@ public class ClothingItemService {
     }
 
     public ClothingItemListResponse getItems(User user, String category, String gender, int page, int limit) {
-        UserPreferencesResponse preferences = user == null ? null : preferencesService.findExisting(user);
-        String effectiveGender = gender;
-        List<String> effectiveCategories = List.of();
-        boolean appliedPreferences = false;
-
-        if (isBlank(category) && isBlank(gender) && preferences != null) {
-            if (!"unisex".equals(preferences.getPreferredGenderCategory())) {
-                effectiveGender = preferences.getPreferredGenderCategory();
-                appliedPreferences = true;
-            }
-            if (preferences.getPreferredCategories() != null && !preferences.getPreferredCategories().isEmpty()) {
-                effectiveCategories = preferences.getPreferredCategories();
-                appliedPreferences = true;
-            }
-        }
-
-        ClothingItemListResponse response = queryItems(category, effectiveGender, effectiveCategories, page, limit);
-        if (appliedPreferences && response.getItems().isEmpty()) {
-            return queryItems(category, gender, List.of(), page, limit);
-        }
-        return response;
+        return queryItems(category, gender, List.of(), page, limit);
     }
 
     private ClothingItemListResponse queryItems(String category, String gender, List<String> categories, int page, int limit) {

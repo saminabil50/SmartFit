@@ -4,7 +4,6 @@ import com.example.smartfitapp.model.ClothingItem;
 import com.example.smartfitapp.model.ClothingItemListResponse;
 import com.example.smartfitapp.model.ClothingItemRequest;
 import com.example.smartfitapp.model.ClothingItemSaveResponse;
-import com.example.smartfitapp.model.EstimateMeasurementRequest;
 import com.example.smartfitapp.model.FittingResult;
 import com.example.smartfitapp.model.FittingResultListResponse;
 import com.example.smartfitapp.model.FittingResultRequest;
@@ -12,13 +11,8 @@ import com.example.smartfitapp.model.ImageItem;
 import com.example.smartfitapp.model.ImageListResponse;
 import com.example.smartfitapp.model.LoginRequest;
 import com.example.smartfitapp.model.LoginResponse;
-import com.example.smartfitapp.model.MeasurementListResponse;
-import com.example.smartfitapp.model.MeasurementResponse;
 import com.example.smartfitapp.model.MessageResponse;
 import com.example.smartfitapp.model.RegisterRequest;
-import com.example.smartfitapp.model.SizeRecommendation;
-import com.example.smartfitapp.model.SizeRecommendationListResponse;
-import com.example.smartfitapp.model.SizeRecommendationRequest;
 import com.example.smartfitapp.model.SizeChartUpdateRequest;
 import com.example.smartfitapp.model.SizeChartUpdateResponse;
 import com.example.smartfitapp.model.TryOnGenerateRequest;
@@ -27,9 +21,6 @@ import com.example.smartfitapp.model.TryOnResultListResponse;
 import com.example.smartfitapp.model.UpdateProfileRequest;
 import com.example.smartfitapp.model.UpdateProfileResponse;
 import com.example.smartfitapp.model.UserResponse;
-import com.example.smartfitapp.model.UserPreferences;
-import com.example.smartfitapp.model.UserPreferencesRequest;
-import com.example.smartfitapp.model.UserPreferencesSaveResponse;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -69,21 +60,6 @@ public interface ApiService {
     @DELETE("api/v1/users/me")
     Call<MessageResponse> deleteAccount(@Header("Authorization") String bearerToken);
 
-    // ── Preferences ─────────────────────────────────────────────────────────
-    @GET("api/v1/preferences/me")
-    Call<UserPreferences> getMyPreferences(@Header("Authorization") String bearerToken);
-
-    @PUT("api/v1/preferences/me")
-    Call<UserPreferencesSaveResponse> savePreferences(@Header("Authorization") String bearerToken,
-                                                      @Body UserPreferencesRequest request);
-
-    @PATCH("api/v1/preferences/me")
-    Call<UserPreferencesSaveResponse> updatePreferences(@Header("Authorization") String bearerToken,
-                                                        @Body UserPreferencesRequest request);
-
-    @DELETE("api/v1/preferences/me")
-    Call<UserPreferencesSaveResponse> resetPreferences(@Header("Authorization") String bearerToken);
-
     // ── Images ────────────────────────────────────────────────────────────────
     @Multipart
     @POST("api/v1/images/upload")
@@ -101,28 +77,6 @@ public interface ApiService {
     @DELETE("api/v1/images/{imageId}")
     Call<MessageResponse> deleteImage(@Header("Authorization") String bearerToken,
                                       @Path("imageId") Long imageId);
-
-    // ── Measurements ──────────────────────────────────────────────────────────
-    @POST("api/v1/measurements/estimate")
-    Call<MeasurementResponse> estimateMeasurements(@Header("Authorization") String bearerToken,
-                                                   @Body EstimateMeasurementRequest request);
-
-    @Multipart
-    @POST("api/v1/measurements/estimate-from-image")
-    Call<MeasurementResponse> estimateMeasurementsFromImage(@Header("Authorization") String bearerToken,
-                                                            @Part MultipartBody.Part image,
-                                                            @Part("height_cm") RequestBody heightCm);
-
-    @GET("api/v1/measurements")
-    Call<MeasurementListResponse> getMyMeasurements(@Header("Authorization") String bearerToken);
-
-    @GET("api/v1/measurements/{measurementId}")
-    Call<MeasurementResponse> getMeasurement(@Header("Authorization") String bearerToken,
-                                             @Path("measurementId") Long measurementId);
-
-    @DELETE("api/v1/measurements/{measurementId}")
-    Call<MessageResponse> deleteMeasurement(@Header("Authorization") String bearerToken,
-                                            @Path("measurementId") Long measurementId);
 
     // ── Catalog ───────────────────────────────────────────────────────────────
     @GET("api/v1/clothing-items")
@@ -197,8 +151,7 @@ public interface ApiService {
     @POST("api/v1/tryon/generate-from-image")
     Call<TryOnResult> generateTryOnFromImage(@Header("Authorization") String bearerToken,
                                              @Part MultipartBody.Part image,
-                                             @Part("item_id") RequestBody itemId,
-                                             @Part("measurement_id") RequestBody measurementId);
+                                             @Part("item_id") RequestBody itemId);
 
     @GET("api/v1/tryon")
     Call<TryOnResultListResponse> getTryOnResults(@Header("Authorization") String bearerToken);
@@ -210,22 +163,6 @@ public interface ApiService {
     @DELETE("api/v1/tryon/{tryOnId}")
     Call<MessageResponse> deleteTryOnResult(@Header("Authorization") String bearerToken,
                                             @Path("tryOnId") Long tryOnId);
-
-    // ── Size Recommendations ────────────────────────────────────────────────
-    @POST("api/v1/recommendations/size")
-    Call<SizeRecommendation> recommendSize(@Header("Authorization") String bearerToken,
-                                           @Body SizeRecommendationRequest request);
-
-    @GET("api/v1/recommendations")
-    Call<SizeRecommendationListResponse> getRecommendations(@Header("Authorization") String bearerToken);
-
-    @GET("api/v1/recommendations/{recommendationId}")
-    Call<SizeRecommendation> getRecommendation(@Header("Authorization") String bearerToken,
-                                               @Path("recommendationId") Long recommendationId);
-
-    @DELETE("api/v1/recommendations/{recommendationId}")
-    Call<MessageResponse> deleteRecommendation(@Header("Authorization") String bearerToken,
-                                               @Path("recommendationId") Long recommendationId);
 
     // ── Fitting Results ─────────────────────────────────────────────────────
     @POST("api/v1/fitting-results")

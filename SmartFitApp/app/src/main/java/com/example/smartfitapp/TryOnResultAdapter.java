@@ -69,7 +69,7 @@ public class TryOnResultAdapter extends RecyclerView.Adapter<TryOnResultAdapter.
         Glide.with(holder.thumbnail.getContext())
                 .load(ApiClient.fullImageUrl(result.resultImageUrl))
                 .placeholder(android.R.drawable.ic_menu_gallery)
-                .centerCrop()
+                .fitCenter()
                 .into(holder.thumbnail);
 
         holder.deleteButton.setOnClickListener(v -> {

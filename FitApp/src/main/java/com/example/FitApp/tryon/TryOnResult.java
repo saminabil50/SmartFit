@@ -29,8 +29,6 @@ public class TryOnResult {
     @Column(nullable = false)
     private Long itemId;
 
-    private Long measurementId;
-
     @Column(nullable = false)
     private String resultImageUrl;
 

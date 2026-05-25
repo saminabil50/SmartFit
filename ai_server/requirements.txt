@@ -9,3 +9,4 @@ numpy
 mediapipe
 rembg
 onnxruntime
+fal-client

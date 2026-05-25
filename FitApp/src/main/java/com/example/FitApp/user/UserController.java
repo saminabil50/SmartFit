@@ -2,8 +2,6 @@ package com.example.FitApp.user;
 
 import com.example.FitApp.auth.dto.UserResponse;
 import com.example.FitApp.image.ImageService;
-import com.example.FitApp.measurement.MeasurementService;
-import com.example.FitApp.preferences.PreferencesService;
 import com.example.FitApp.user.dto.UpdateProfileRequest;
 import com.example.FitApp.user.dto.UpdateProfileResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +18,6 @@ public class UserController {
 
     private final UserService userService;
     private final ImageService imageService;
-    private final MeasurementService measurementService;
-    private final PreferencesService preferencesService;
 
     @GetMapping("/me")
     public UserResponse getProfile(Authentication authentication) {
@@ -40,9 +36,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public Map<String, String> deleteAccount(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        measurementService.deleteAllUserMeasurements(user);
         imageService.deleteAllUserImages(user);
-        preferencesService.deleteForUser(user);
         userService.deleteUser(user);
         return Map.of("message", "Account deleted successfully");
     }

@@ -44,7 +44,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# edit .env if needed
+# set FAL_KEY in .env or export it before starting the server
 ```
 
 ### 5. Run the server
@@ -66,9 +66,9 @@ http://127.0.0.1:9000/docs
 | Method | Path                        | Description                          |
 |--------|-----------------------------|--------------------------------------|
 | GET    | `/ai/health`                | Health check — confirms server is up |
-| POST   | `/ai/measurements/estimate` | Estimate body measurements from image |
 | POST   | `/ai/tryon/generate`        | Generate virtual try-on result        |
 | POST   | `/ai/images/validate`       | Validate image quality / person check |
+| POST   | `/ai/images/remove-background` | Remove image background            |
 
 ---
 
@@ -77,13 +77,6 @@ http://127.0.0.1:9000/docs
 ### Health check
 ```bash
 curl http://127.0.0.1:9000/ai/health
-```
-
-### Estimate measurements
-```bash
-curl -X POST http://127.0.0.1:9000/ai/measurements/estimate \
-  -H "Content-Type: application/json" \
-  -d '{"image_path": "/path/to/user.jpg", "height_cm": 178}'
 ```
 
 ### Generate try-on
@@ -117,9 +110,8 @@ The Java client is at:
 FitApp/src/main/java/com/example/FitApp/ai/AiClient.java
 ```
 
-It exposes four methods:
+It exposes three methods:
 - `checkAiHealth()`
-- `estimateMeasurements(imagePath, heightCm)`
 - `generateTryOn(userImagePath, clothingImagePath, outputDir)`
 - `validateImage(imagePath)`
 
@@ -132,15 +124,23 @@ GET /api/v1/health/ai
 
 ---
 
-## What is placeholder now
+## Model Status
 
 | Feature                   | Status         |
 |---------------------------|----------------|
-| Body measurements         | Placeholder — proportional formula based on height |
-| Virtual try-on            | Placeholder — returns the user image unchanged |
-| Image validation          | Placeholder — always returns `is_valid: true` |
-| Person detection          | Not implemented |
-| Blur / quality scoring    | Not implemented |
+| Virtual try-on            | fal.ai `fal-ai/fashn/tryon/v1.5` |
+| Image validation          | OpenCV/MediaPipe validation |
+| Person detection          | MediaPipe pose |
+| Blur / quality scoring    | OpenCV-based checks |
+
+Virtual try-on requires:
+
+```bash
+export FAL_KEY="YOUR_API_KEY"
+```
+
+Do not put the fal.ai key in Android, frontend code, Git, logs, or screenshots. The mobile app calls
+the Spring Boot backend, the backend calls this AI server, and only this AI server talks to fal.ai.
 
 ---
 
@@ -148,11 +148,9 @@ GET /api/v1/health/ai
 
 | Model type               | Libraries to add                          |
 |--------------------------|-------------------------------------------|
-| Body measurement         | MediaPipe Pose, OpenCV, custom regression |
-| Virtual try-on           | Diffusion models (e.g. IDM-VTON), OOTDiffusion |
+| Virtual try-on           | Hosted model APIs or diffusion/VTON models |
 | Segmentation             | SAM (Segment Anything Model)              |
 | Person / full-body check | YOLO, MediaPipe Pose                      |
 | Image quality            | OpenCV blur detection, BRISQUE            |
 
-To add a real model: replace the placeholder function in the relevant `services/` file.
 The request/response contracts in `schemas/` are stable and will not need to change.

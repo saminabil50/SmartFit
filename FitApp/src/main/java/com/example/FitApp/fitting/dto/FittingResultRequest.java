@@ -8,7 +8,5 @@ import lombok.Setter;
 public class FittingResultRequest {
     private Long imageId;
     private Long itemId;
-    private Long measurementId;
-    private Long recommendationId;
     private Long tryonId;
 }

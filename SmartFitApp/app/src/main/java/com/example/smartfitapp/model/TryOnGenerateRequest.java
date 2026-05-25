@@ -9,12 +9,8 @@ public class TryOnGenerateRequest {
     @SerializedName("item_id")
     public Long itemId;
 
-    @SerializedName("measurement_id")
-    public Long measurementId;
-
-    public TryOnGenerateRequest(Long imageId, Long itemId, Long measurementId) {
+    public TryOnGenerateRequest(Long imageId, Long itemId) {
         this.imageId = imageId;
         this.itemId = itemId;
-        this.measurementId = measurementId;
     }
 }

@@ -12,7 +12,6 @@ public class TryOnResultResponse {
     private Long id;
     private Long imageId;
     private Long itemId;
-    private Long measurementId;
     private String status;
     private String resultImageUrl;
     private Double confidenceScore;

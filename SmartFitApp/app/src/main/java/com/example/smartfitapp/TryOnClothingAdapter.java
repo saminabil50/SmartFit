@@ -8,11 +8,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.smartfitapp.model.ClothingItem;
 import com.example.smartfitapp.network.ApiClient;
+import com.google.android.material.card.MaterialCardView;
 
 import java.util.List;
 
@@ -47,19 +49,22 @@ public class TryOnClothingAdapter extends RecyclerView.Adapter<TryOnClothingAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ClothingItem item = items.get(position);
+        boolean selected = item.id != null && item.id.equals(selectedItemId);
         holder.nameText.setText(item.name != null ? item.name : "Clothing item");
-        holder.metaText.setText((item.category != null ? item.category : "") +
-                (item.gender != null ? " - " + item.gender : ""));
-        holder.selectedText.setVisibility(item.id != null && item.id.equals(selectedItemId)
-                ? View.VISIBLE
-                : View.GONE);
+        holder.metaText.setText(buildMetaText(item));
 
         Context context = holder.itemView.getContext();
+        holder.cardView.setStrokeColor(ContextCompat.getColor(
+                context,
+                selected ? R.color.primary : R.color.outline_variant
+        ));
+        holder.cardView.setStrokeWidth(selected ? dp(context, 2) : dp(context, 1));
+
         if (item.imageUrl != null && !item.imageUrl.isEmpty()) {
             Glide.with(context)
                     .load(ApiClient.fullImageUrl(item.imageUrl))
                     .placeholder(android.R.drawable.ic_menu_gallery)
-                    .centerCrop()
+                    .fitCenter()
                     .into(holder.imageView);
         } else {
             holder.imageView.setImageResource(android.R.drawable.ic_menu_gallery);
@@ -73,16 +78,29 @@ public class TryOnClothingAdapter extends RecyclerView.Adapter<TryOnClothingAdap
         return items.size();
     }
 
+    private String buildMetaText(ClothingItem item) {
+        String gender = item.gender != null ? item.gender.trim() : "";
+        String category = item.category != null ? item.category.trim() : "";
+        if (!gender.isEmpty() && !category.isEmpty()) return gender + " - " + category;
+        if (!gender.isEmpty()) return gender;
+        return category;
+    }
+
+    private int dp(Context context, int value) {
+        return Math.round(value * context.getResources().getDisplayMetrics().density);
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
+        MaterialCardView cardView;
         ImageView imageView;
-        TextView nameText, metaText, selectedText;
+        TextView nameText, metaText;
 
         ViewHolder(View view) {
             super(view);
+            cardView = (MaterialCardView) view;
             imageView = view.findViewById(R.id.itemImage);
             nameText = view.findViewById(R.id.itemName);
             metaText = view.findViewById(R.id.itemMeta);
-            selectedText = view.findViewById(R.id.selectedText);
         }
     }
 }

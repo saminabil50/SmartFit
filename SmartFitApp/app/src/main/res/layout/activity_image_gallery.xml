@@ -1,34 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white">
+    android:background="@color/background">
 
-    <!-- Header -->
-    <LinearLayout
+    <!-- Header bar -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="1dp"
+        app:cardBackgroundColor="@color/primary_dark">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingEnd="@dimen/card_padding"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Generated Try-Ons"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/on_primary" />
+
+            <Button
+                android:id="@+id/updateButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Select"
+                android:textColor="@color/on_primary"
+                android:textAllCaps="false"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                app:strokeColor="@color/on_primary" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Bulk actions bar -->
+    <LinearLayout
+        android:id="@+id/bulkActionsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:background="@color/primary_container"
+        android:paddingStart="@dimen/screen_padding"
+        android:paddingEnd="@dimen/card_padding"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:visibility="gone">
 
         <TextView
+            android:id="@+id/selectAllText"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="My Photos"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#6750A4" />
+            android:layout_weight="1"
+            android:text="Select all"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
 
         <Button
-            android:id="@+id/uploadButton"
+            android:id="@+id/deleteSelectedButton"
+            style="@style/Widget.Material3.Button"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Upload"
+            android:layout_height="40dp"
+            android:text="Delete"
             android:textAllCaps="false"
-            style="@style/Widget.Material3.Button" />
+            app:backgroundTint="@color/error" />
+
     </LinearLayout>
 
     <ProgressBar
@@ -36,17 +84,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/card_padding"
         android:visibility="gone" />
 
+    <!-- Empty state -->
     <TextView
         android:id="@+id/emptyText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
-        android:gravity="center"
-        android:text="No photos yet. Upload your first photo!"
-        android:textColor="#888888"
-        android:textSize="14sp"
+        android:layout_marginTop="64dp"
+        android:text="No generated try-on photos yet"
+        style="@style/Text.Empty"
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -54,6 +102,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="8dp" />
+        android:paddingStart="@dimen/small_gap"
+        android:paddingEnd="@dimen/small_gap"
+        android:paddingTop="@dimen/small_gap"
+        android:clipToPadding="false" />
 
 </LinearLayout>

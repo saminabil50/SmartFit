@@ -12,10 +12,7 @@ public class FittingResultResponse {
     private Long id;
     private Long imageId;
     private Long itemId;
-    private Long measurementId;
-    private Long recommendationId;
     private Long tryonId;
-    private String recommendedSize;
     private String fitStatus;
     private String fitLabel;
     private Double confidenceScore;
@@ -23,7 +20,5 @@ public class FittingResultResponse {
     private List<String> warnings;
     private String resultImageUrl;
     private LocalDateTime createdAt;
-    private FittingMeasurementSummaryResponse measurementSummary;
-    private FittingRecommendationSummaryResponse recommendation;
     private FittingClothingItemResponse clothingItem;
 }

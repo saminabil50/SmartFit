@@ -23,7 +23,6 @@ import androidx.core.content.FileProvider;
 import com.bumptech.glide.Glide;
 import com.example.smartfitapp.auth.AuthManager;
 import com.example.smartfitapp.model.ImageItem;
-import com.example.smartfitapp.model.UserPreferences;
 import com.example.smartfitapp.network.ApiClient;
 
 import java.io.ByteArrayOutputStream;
@@ -52,8 +51,6 @@ public class ImageUploadActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private Uri cameraOutputUri;
     private String selectedMimeType = "image/jpeg";
-    private boolean cameraAllowed = true;
-
     private final ActivityResultLauncher<String> permissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             granted -> { if (granted) launchCamera(); }
@@ -110,43 +107,6 @@ public class ImageUploadActivity extends AppCompatActivity {
         cameraButton.setOnClickListener(v -> requestCameraAndLaunch());
         galleryButton.setOnClickListener(v -> launchGallery());
         uploadButton.setOnClickListener(v -> uploadImage());
-
-        loadPreferences();
-    }
-
-    private void loadPreferences() {
-        ApiClient.get().getMyPreferences(authManager.getBearerToken()).enqueue(new Callback<UserPreferences>() {
-            @Override
-            public void onResponse(Call<UserPreferences> call, Response<UserPreferences> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    UserPreferences preferences = response.body();
-                    setSpinnerSelection(preferences.defaultImageType);
-                    if (Boolean.FALSE.equals(preferences.cameraEnabled)) {
-                        cameraAllowed = false;
-                        cameraButton.setEnabled(false);
-                        cameraButton.setText("Camera Disabled");
-                    }
-                } else if (response.code() == 401) {
-                    authManager.logout();
-                    finish();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UserPreferences> call, Throwable t) {
-                showStatus("Using default upload settings", false);
-            }
-        });
-    }
-
-    private void setSpinnerSelection(String imageType) {
-        if (imageType == null) return;
-        for (int i = 0; i < IMAGE_TYPES.length; i++) {
-            if (IMAGE_TYPES[i].equals(imageType)) {
-                imageTypeSpinner.setSelection(i);
-                return;
-            }
-        }
     }
 
     private void requestCameraAndLaunch() {
@@ -240,13 +200,13 @@ public class ImageUploadActivity extends AppCompatActivity {
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         uploadButton.setEnabled(!loading && selectedImageUri != null);
-        cameraButton.setEnabled(!loading && cameraAllowed);
+        cameraButton.setEnabled(!loading);
         galleryButton.setEnabled(!loading);
     }
 
     private void showStatus(String message, boolean isError) {
         statusText.setText(message);
-        statusText.setTextColor(isError ? 0xFFB00020 : 0xFF388E3C);
+        statusText.setTextColor(ContextCompat.getColor(this, isError ? R.color.error : R.color.success));
         statusText.setVisibility(View.VISIBLE);
     }
 

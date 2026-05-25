@@ -1,5 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand system -->
+    <color name="primary">#1B7F79</color>
+    <color name="primary_dark">#12343B</color>
+    <color name="primary_container">#D7F2EE</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#052927</color>
+
+    <!-- Secondary -->
+    <color name="secondary">#B85C38</color>
+    <color name="secondary_container">#FFE2D5</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_secondary_container">#3D1608</color>
+
+    <!-- Accents -->
+    <color name="accent">#DFA53A</color>
+    <color name="accent_container">#FFF1C7</color>
+
+    <!-- Surfaces -->
+    <color name="background">#F5F7F4</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#E8F0ED</color>
+    <color name="on_background">#162326</color>
+    <color name="on_surface">#162326</color>
+    <color name="on_surface_variant">#61706F</color>
+
+    <!-- Error -->
+    <color name="error">#B3261E</color>
+    <color name="error_container">#F9DEDC</color>
+    <color name="on_error">#FFFFFF</color>
+    <color name="on_error_container">#410E0B</color>
+
+    <!-- Status -->
+    <color name="success">#22744C</color>
+    <color name="warning">#9A5A19</color>
+
+    <!-- Utility -->
+    <color name="outline">#8EA09D</color>
+    <color name="outline_variant">#D7E0DD</color>
+    <color name="divider">#DDE6E3</color>
+    <color name="image_placeholder">#EDF3F1</color>
+    <color name="text_hint">#8A9695</color>
+
+    <!-- Legacy names for compat -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>
