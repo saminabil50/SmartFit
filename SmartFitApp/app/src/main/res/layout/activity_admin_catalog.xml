@@ -23,22 +23,27 @@
             style="@style/Text.ScreenTitle" />
 
         <!-- Mode toggle -->
-        <LinearLayout
+        <com.google.android.material.button.MaterialButtonToggleGroup
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/large_gap"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/updateModeButton"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_height"
                 android:layout_weight="1"
                 android:text="Update Item"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                app:icon="@android:drawable/ic_menu_edit"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/addModeButton"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
@@ -46,9 +51,12 @@
                 android:layout_marginStart="@dimen/small_gap"
                 android:layout_weight="1"
                 android:text="Add Item"
-                android:textAllCaps="false" />
+                android:textAllCaps="false"
+                app:icon="@android:drawable/ic_input_add"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp" />
 
-        </LinearLayout>
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <!-- Current Available section (for update mode) -->
         <LinearLayout
@@ -69,7 +77,7 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/itemsRecyclerView"
                 android:layout_width="match_parent"
-                android:layout_height="220dp"
+                android:layout_height="216dp"
                 android:nestedScrollingEnabled="false" />
 
         </LinearLayout>
@@ -214,14 +222,17 @@
             android:textColor="@color/on_surface"
             android:textSize="14sp" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/saveButton"
             style="@style/Widget.Material3.Button"
             android:layout_width="match_parent"
             android:layout_height="@dimen/button_height"
             android:layout_marginTop="@dimen/element_gap"
             android:text="Save Item"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            app:icon="@android:drawable/ic_menu_save"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp" />
 
         <TextView
             android:id="@+id/statusText"

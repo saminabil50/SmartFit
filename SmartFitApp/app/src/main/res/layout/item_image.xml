@@ -6,8 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
     android:layout_marginEnd="8dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="4dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp"
     app:cardElevation="1dp"
     app:cardCornerRadius="@dimen/card_radius"
     app:strokeColor="@color/outline_variant"
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="@dimen/card_padding">
+        android:padding="14dp">
 
         <CheckBox
             android:id="@+id/selectCheckbox"
@@ -28,8 +28,8 @@
             android:visibility="gone" />
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="72dp"
-            android:layout_height="80dp"
+            android:layout_width="68dp"
+            android:layout_height="76dp"
             app:cardCornerRadius="@dimen/small_radius"
             app:cardElevation="0dp"
             app:cardBackgroundColor="@color/image_placeholder">
@@ -49,14 +49,14 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginStart="@dimen/card_padding"
-            android:layout_marginEnd="@dimen/small_gap">
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="6dp">
 
             <TextView
                 android:id="@+id/imageType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="@color/on_surface"
                 android:maxLines="2"
@@ -66,8 +66,8 @@
                 android:id="@+id/createdAt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textSize="12sp"
+                android:layout_marginTop="2dp"
+                android:textSize="11sp"
                 android:textColor="@color/on_surface_variant" />
         </LinearLayout>
 

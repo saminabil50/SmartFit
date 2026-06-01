@@ -9,6 +9,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.smartfitapp.model.RegisterRequest;
 import com.example.smartfitapp.model.UserResponse;
@@ -40,6 +41,10 @@ public class RegisterActivity extends AppCompatActivity {
         progressBar          = findViewById(R.id.progressBar);
 
         registerButton.setOnClickListener(v -> attemptRegister());
+
+        // Make this look like a real link (blue + underlined).
+        loginLink.setTextColor(ContextCompat.getColor(this, android.R.color.holo_blue_dark));
+        loginLink.setPaintFlags(loginLink.getPaintFlags() | android.graphics.Paint.UNDERLINE_TEXT_FLAG);
 
         loginLink.setOnClickListener(v -> finish());
     }

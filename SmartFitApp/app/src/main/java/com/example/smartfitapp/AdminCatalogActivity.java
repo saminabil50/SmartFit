@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.example.smartfitapp.auth.AuthManager;
 import com.example.smartfitapp.model.ClothingItem;
 import com.example.smartfitapp.model.ClothingItemListResponse;
@@ -69,7 +70,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private Spinner categorySpinner, genderSpinner;
     private CheckBox activeCheckbox;
     private LinearLayout currentAvailableSection;
-    private Button addModeButton, updateModeButton, saveButton;
+    private MaterialButton addModeButton, updateModeButton, saveButton;
     private TextView statusText, selectedImageText;
     private View selectedImageCard;
     private ImageView selectedImagePreview;
@@ -193,6 +194,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private void populateForm(ClothingItem item) {
         addMode = false;
         selectedItemId = item.id;
+        updateModeButton.setChecked(true);
         selectedImageUri = null;
         nameInput.setText(value(item.name));
         descriptionInput.setText(value(item.description));
@@ -216,6 +218,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
 
     private void startAddMode() {
         addMode = true;
+        addModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.GONE);
         clearForm();
         chooseImage();
@@ -223,6 +226,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
 
     private void startUpdateMode() {
         addMode = false;
+        updateModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.VISIBLE);
         selectedImageUri = null;
         selectedImageText.setText("Select an item from Current Available to edit it.");
@@ -248,6 +252,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
         addMode = false;
         selectedItemId = null;
         selectedImageUri = null;
+        updateModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.GONE);
         clearForm();
         selectedImageText.setText("Choose Add Item to upload a new catalog image, or Update Item to edit an existing item.");

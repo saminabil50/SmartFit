@@ -8,12 +8,13 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center_horizontal"
+        android:gravity="center"
         android:paddingStart="@dimen/screen_padding"
         android:paddingEnd="@dimen/screen_padding"
-        android:paddingBottom="40dp">
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp">
 
         <!-- Brand header -->
         <LinearLayout
@@ -21,8 +22,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginTop="60dp"
-            android:layout_marginBottom="28dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -148,9 +148,10 @@
             android:id="@+id/loginLink"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/large_gap"
+            android:layout_marginTop="@dimen/card_padding"
             android:text="Already have an account? Login"
-            style="@style/Text.Link" />
+            android:textColor="@android:color/holo_blue_dark"
+            android:textSize="14sp" />
 
     </LinearLayout>
 </ScrollView>

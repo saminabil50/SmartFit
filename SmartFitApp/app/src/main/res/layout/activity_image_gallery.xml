@@ -84,7 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="@dimen/card_padding"
+        android:layout_marginTop="@dimen/small_gap"
         android:visibility="gone" />
 
     <!-- Empty state -->
@@ -92,7 +92,7 @@
         android:id="@+id/emptyText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="28dp"
         android:text="No generated try-on photos yet"
         style="@style/Text.Empty"
         android:visibility="gone" />

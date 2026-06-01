@@ -28,7 +28,9 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/screen_padding"
+                android:layout_marginStart="@dimen/screen_padding"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="@dimen/screen_padding"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/outline_variant"
@@ -38,9 +40,9 @@
                 <ImageView
                     android:id="@+id/itemImage"
                     android:layout_width="match_parent"
-                    android:layout_height="260dp"
+                    android:layout_height="220dp"
                     android:adjustViewBounds="true"
-                    android:padding="12dp"
+                    android:padding="10dp"
                     android:scaleType="fitCenter"
                     android:contentDescription="Clothing item image" />
 
@@ -52,7 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/screen_padding"
                 android:layout_marginEnd="@dimen/screen_padding"
-                android:layout_marginBottom="@dimen/large_gap"
+                android:layout_marginBottom="20dp"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/outline_variant"
@@ -76,8 +78,8 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
                         android:background="@color/divider" />
 
                     <TextView
@@ -99,7 +101,7 @@
                         android:id="@+id/sizesLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="12dp"
                         android:text="Available Sizes"
                         android:textStyle="bold"
                         android:textSize="14sp"
@@ -109,7 +111,7 @@
                         android:id="@+id/sizesText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="4dp"
                         android:textSize="14sp"
                         android:textColor="@color/primary" />
 

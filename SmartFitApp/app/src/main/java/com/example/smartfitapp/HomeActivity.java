@@ -27,6 +27,7 @@ import retrofit2.Response;
 public class HomeActivity extends AppCompatActivity {
 
     private AuthManager authManager;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +45,19 @@ public class HomeActivity extends AppCompatActivity {
         TextView welcomeText = findViewById(R.id.welcomeText);
         TextView emailText   = findViewById(R.id.emailText);
         ImageButton profileButton = findViewById(R.id.profileButton);
-        Button photosButton       = findViewById(R.id.photosButton);
-        Button catalogButton      = findViewById(R.id.catalogButton);
-        Button tryOnButton        = findViewById(R.id.tryOnButton);
-        Button adminCatalogButton = findViewById(R.id.adminCatalogButton);
+        View photosButton       = findViewById(R.id.photosButton);
+        View catalogButton      = findViewById(R.id.catalogButton);
+        View tryOnButton        = findViewById(R.id.tryOnButton);
+        View adminCatalogButton = findViewById(R.id.adminCatalogButton);
 
         UserResponse user = authManager.getCurrentUser();
         if (user != null) {
             welcomeText.setText("Welcome, " + user.fullName + "!");
             emailText.setText(user.email);
-            adminCatalogButton.setVisibility("admin".equals(user.role) ? android.view.View.VISIBLE : android.view.View.GONE);
+            isAdmin = "admin".equals(user.role);
         }
-        refreshCurrentUser(adminCatalogButton);
+        refreshCurrentUser();
+        configureFourthTile();
 
         profileButton.setOnClickListener(this::showProfileMenu);
         photosButton.setOnClickListener(v ->
@@ -65,13 +67,30 @@ public class HomeActivity extends AppCompatActivity {
         tryOnButton.setOnClickListener(v ->
                 startActivity(new Intent(this, TryOnActivity.class)));
         adminCatalogButton.setOnClickListener(v ->
-                startActivity(new Intent(this, AdminCatalogActivity.class)));
+                startActivity(new Intent(this, isAdmin ? AdminCatalogActivity.class : ImageUploadActivity.class)));
+    }
+
+    private void configureFourthTile() {
+        TextView title = findViewById(R.id.adminTileTitle);
+        TextView subtitle = findViewById(R.id.adminTileSubtitle);
+        android.widget.ImageView icon = findViewById(R.id.adminTileIcon);
+
+        if (isAdmin) {
+            title.setText("Admin Catalog");
+            subtitle.setText("Manage catalog items");
+            icon.setImageResource(android.R.drawable.ic_menu_edit);
+        } else {
+            title.setText("Upload Photo");
+            subtitle.setText("Add a new photo");
+            icon.setImageResource(android.R.drawable.ic_menu_upload);
+        }
     }
 
     private void showProfileMenu(View anchor) {
         LinearLayout menuLayout = new LinearLayout(this);
         menuLayout.setOrientation(LinearLayout.VERTICAL);
-        menuLayout.setBackgroundColor(Color.WHITE);
+        menuLayout.setBackgroundResource(R.drawable.bg_profile_menu);
+        menuLayout.setPadding(dp(4), dp(4), dp(4), dp(4));
         int width = dp(180);
 
         PopupWindow popupWindow = new PopupWindow(
@@ -88,6 +107,8 @@ public class HomeActivity extends AppCompatActivity {
 
         TextView profileOption = createProfileMenuItem("My Profile");
         TextView logoutOption = createProfileMenuItem("Logout");
+        profileOption.setCompoundDrawablesRelativeWithIntrinsicBounds(android.R.drawable.ic_menu_myplaces, 0, 0, 0);
+        logoutOption.setCompoundDrawablesRelativeWithIntrinsicBounds(android.R.drawable.ic_lock_power_off, 0, 0, 0);
         menuLayout.addView(profileOption);
         menuLayout.addView(logoutOption);
 
@@ -110,7 +131,8 @@ public class HomeActivity extends AppCompatActivity {
         item.setTextColor(ContextCompat.getColor(this, R.color.on_surface));
         item.setTextSize(15);
         item.setGravity(android.view.Gravity.CENTER_VERTICAL);
-        item.setPadding(dp(16), 0, dp(16), 0);
+        item.setPadding(dp(12), 0, dp(12), 0);
+        item.setCompoundDrawablePadding(dp(10));
         item.setBackgroundColor(Color.WHITE);
         item.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -146,15 +168,14 @@ public class HomeActivity extends AppCompatActivity {
         finish();
     }
 
-    private void refreshCurrentUser(Button adminCatalogButton) {
+    private void refreshCurrentUser() {
         ApiClient.get().getMe(authManager.getBearerToken()).enqueue(new Callback<UserResponse>() {
             @Override
             public void onResponse(Call<UserResponse> call, Response<UserResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     authManager.saveUser(response.body());
-                    adminCatalogButton.setVisibility("admin".equals(response.body().role)
-                            ? android.view.View.VISIBLE
-                            : android.view.View.GONE);
+                    isAdmin = "admin".equals(response.body().role);
+                    configureFourthTile();
                 } else if (response.code() == 401) {
                     authManager.logout();
                     goToLogin();
