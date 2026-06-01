@@ -1,5 +1,9 @@
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
+
+# Always load ai_server/.env regardless of where the process is started from.
+AI_SERVER_DIR = Path(__file__).resolve().parent
+load_dotenv(dotenv_path=AI_SERVER_DIR / ".env")
 
 import os
 from fastapi import FastAPI, HTTPException
