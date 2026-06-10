@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.example.smartfitapp.model.RegisterRequest;
 import com.example.smartfitapp.model.UserResponse;
 import com.example.smartfitapp.network.ApiClient;
@@ -21,7 +22,8 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText fullNameInput, emailInput, passwordInput, confirmPasswordInput;
+    private EditText fullNameInput, emailInput, passwordInput;
+    private TextInputLayout passwordLayout;
     private Button registerButton;
     private TextView errorText, loginLink;
     private ProgressBar progressBar;
@@ -34,7 +36,7 @@ public class RegisterActivity extends AppCompatActivity {
         fullNameInput        = findViewById(R.id.fullNameInput);
         emailInput           = findViewById(R.id.emailInput);
         passwordInput        = findViewById(R.id.passwordInput);
-        confirmPasswordInput = findViewById(R.id.confirmPasswordInput);
+        passwordLayout       = findViewById(R.id.passwordLayout);
         registerButton       = findViewById(R.id.registerButton);
         errorText            = findViewById(R.id.errorText);
         loginLink            = findViewById(R.id.loginLink);
@@ -51,21 +53,18 @@ public class RegisterActivity extends AppCompatActivity {
 
 
     private void attemptRegister() {
+        clearErrors();
         String fullName        = fullNameInput.getText().toString().trim();
         String email           = emailInput.getText().toString().trim();
         String password        = passwordInput.getText().toString();
-        String confirmPassword = confirmPasswordInput.getText().toString();
 
         if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
             showError("All fields are required");
             return;
         }
         if (password.length() < 6) {
-            showError("Password must be at least 6 characters");
-            return;
-        }
-        if (!password.equals(confirmPassword)) {
-            showError("Passwords do not match");
+            passwordLayout.setError("Password must be at least 6 characters");
+            passwordInput.requestFocus();
             return;
         }
 
@@ -104,6 +103,11 @@ public class RegisterActivity extends AppCompatActivity {
     private void showError(String message) {
         errorText.setText(message);
         errorText.setVisibility(View.VISIBLE);
+    }
+
+    private void clearErrors() {
+        errorText.setVisibility(View.GONE);
+        passwordLayout.setError(null);
     }
 
     private String parseError(Response<?> response) {

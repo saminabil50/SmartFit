@@ -24,6 +24,13 @@
             android:gravity="center"
             android:layout_marginBottom="16dp">
 
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:contentDescription="SmartFit logo"
+                android:scaleType="fitCenter"
+                android:src="@drawable/logo_black" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

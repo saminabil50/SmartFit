@@ -7,6 +7,10 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.StyleSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,7 +67,7 @@ public class TryOnActivity extends AppCompatActivity {
     private Button generateButton, cameraButton, galleryButton;
     private ProgressBar progressBar;
     private ImageView selectedImagePreview, resultImage;
-    private TextView selectedItemText, resultTitle, warningText, fittingSummaryText;
+    private TextView selectedItemText, resultTitle, warningText, fittingSummaryText, photoInstructionsText;
     private TryOnClothingAdapter clothingAdapter;
     private boolean authErrorShown = false;
     private Uri selectedImageUri;
@@ -123,6 +127,8 @@ public class TryOnActivity extends AppCompatActivity {
         galleryButton = findViewById(R.id.galleryButton);
         progressBar = findViewById(R.id.progressBar);
         selectedItemText = findViewById(R.id.selectedItemText);
+        photoInstructionsText = findViewById(R.id.photoInstructionsText);
+        stylePhotoInstructions();
         resultImage = findViewById(R.id.resultImage);
         resultTitle = findViewById(R.id.resultTitle);
         warningText = findViewById(R.id.warningText);
@@ -329,6 +335,17 @@ public class TryOnActivity extends AppCompatActivity {
         generateButton.setEnabled(selectedImageUri != null && selectedClothingItem != null);
     }
 
+    private void stylePhotoInstructions() {
+        String text = photoInstructionsText.getText().toString();
+        SpannableString styledText = new SpannableString(text);
+        int headerEnd = text.indexOf('\n');
+        if (headerEnd > 0) {
+            styledText.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, headerEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            styledText.setSpan(new RelativeSizeSpan(1.18f), 0, headerEnd, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        photoInstructionsText.setText(styledText);
+    }
+
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         generateButton.setEnabled(!loading && selectedImageUri != null && selectedClothingItem != null);
@@ -364,6 +381,7 @@ public class TryOnActivity extends AppCompatActivity {
 
     private void loadSelectedPreview() {
         selectedImagePreview.setVisibility(View.VISIBLE);
+        photoInstructionsText.setVisibility(View.GONE);
         Glide.with(this)
                 .load(selectedImageUri)
                 .fitCenter()

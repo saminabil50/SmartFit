@@ -12,6 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:title="Item Detail"
+        app:logo="@drawable/logo_white"
+        app:logoDescription="SmartFit logo"
         style="@style/SmartFit.Toolbar" />
 
     <ScrollView

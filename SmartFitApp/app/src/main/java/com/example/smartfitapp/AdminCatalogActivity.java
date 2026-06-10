@@ -5,12 +5,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -31,6 +31,7 @@ import com.example.smartfitapp.model.ClothingItemSaveResponse;
 import com.example.smartfitapp.model.SizeChartUpdateRequest;
 import com.example.smartfitapp.model.SizeChartUpdateResponse;
 import com.example.smartfitapp.network.ApiClient;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
@@ -51,8 +52,10 @@ import retrofit2.Response;
 public class AdminCatalogActivity extends AppCompatActivity {
 
     private static final int PAGE_SIZE = 100;
-    private static final String[] CATEGORIES = {"tshirt", "shirt", "hoodie", "jacket", "sweater", "pants", "jeans", "shorts", "skirt", "dress", "shoes", "accessories"};
-    private static final String[] GENDERS = {"male", "female", "unisex"};
+    private static final String CATEGORY_PLACEHOLDER = "Category";
+    private static final String GENDER_PLACEHOLDER = "Gender";
+    private static final String[] CATEGORIES = {CATEGORY_PLACEHOLDER, "tshirt", "shirt", "hoodie", "jacket", "sweater", "pants", "jeans", "shorts", "skirt", "dress", "shoes", "accessories"};
+    private static final String[] GENDERS = {GENDER_PLACEHOLDER, "male", "female", "unisex"};
     private static final String DEFAULT_SIZE_SYSTEM = "INT";
 
     private final Gson gson = new Gson();
@@ -63,18 +66,21 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private Long selectedItemId;
     private Uri selectedImageUri;
     private String selectedImageMimeType = "image/jpeg";
+    private boolean selectedItemHasImage;
     private boolean addMode = true;
 
     private EditText nameInput, descriptionInput, brandInput;
     private EditText chartSizesInput;
+    private TextInputLayout nameInputLayout, descriptionInputLayout, brandInputLayout, chartSizesInputLayout;
     private Spinner categorySpinner, genderSpinner;
     private CheckBox activeCheckbox;
     private LinearLayout currentAvailableSection;
-    private MaterialButton addModeButton, updateModeButton, saveButton;
+    private MaterialButton addModeButton, updateModeButton, chooseImageButton, saveButton;
     private TextView statusText, selectedImageText;
     private View selectedImageCard;
     private ImageView selectedImagePreview;
     private ProgressBar progressBar;
+    private ScrollView adminCatalogScroll;
 
     private final ActivityResultLauncher<Intent> imagePicker = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -83,6 +89,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
                     selectedImageUri = result.getData().getData();
                     String type = getContentResolver().getType(selectedImageUri);
                     selectedImageMimeType = type != null ? type : "image/jpeg";
+                    selectedImageText.setTextColor(ContextCompat.getColor(this, R.color.on_surface_variant));
                     selectedImageText.setText("Image selected. It will upload when you save the item.");
                     showSelectedImage(selectedImageUri);
                     showStatus("Image selected", false);
@@ -105,18 +112,24 @@ public class AdminCatalogActivity extends AppCompatActivity {
         descriptionInput = findViewById(R.id.descriptionInput);
         brandInput = findViewById(R.id.brandInput);
         chartSizesInput = findViewById(R.id.chartSizesInput);
+        nameInputLayout = findViewById(R.id.nameInputLayout);
+        descriptionInputLayout = findViewById(R.id.descriptionInputLayout);
+        brandInputLayout = findViewById(R.id.brandInputLayout);
+        chartSizesInputLayout = findViewById(R.id.chartSizesInputLayout);
         categorySpinner = findViewById(R.id.categorySpinner);
         genderSpinner = findViewById(R.id.genderSpinner);
         activeCheckbox = findViewById(R.id.activeCheckbox);
         currentAvailableSection = findViewById(R.id.currentAvailableSection);
         addModeButton = findViewById(R.id.addModeButton);
         updateModeButton = findViewById(R.id.updateModeButton);
+        chooseImageButton = findViewById(R.id.chooseImageButton);
         saveButton = findViewById(R.id.saveButton);
         statusText = findViewById(R.id.statusText);
         selectedImageText = findViewById(R.id.selectedImageText);
         selectedImageCard = findViewById(R.id.selectedImageCard);
         selectedImagePreview = findViewById(R.id.selectedImagePreview);
         progressBar = findViewById(R.id.progressBar);
+        adminCatalogScroll = findViewById(R.id.adminCatalogScroll);
 
         bindSpinner(categorySpinner, CATEGORIES);
         bindSpinner(genderSpinner, GENDERS);
@@ -128,6 +141,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
 
         addModeButton.setOnClickListener(v -> startAddMode());
         updateModeButton.setOnClickListener(v -> startUpdateMode());
+        chooseImageButton.setOnClickListener(v -> chooseImage());
         saveButton.setOnClickListener(v -> saveItem());
 
         showInitialMode();
@@ -196,14 +210,16 @@ public class AdminCatalogActivity extends AppCompatActivity {
         selectedItemId = item.id;
         updateModeButton.setChecked(true);
         selectedImageUri = null;
+        clearFieldErrors();
+        selectedItemHasImage = item.imageUrl != null && !item.imageUrl.isBlank();
         nameInput.setText(value(item.name));
         descriptionInput.setText(value(item.description));
         brandInput.setText(value(item.brand));
         activeCheckbox.setChecked(!Boolean.FALSE.equals(item.isActive));
-        selectedImageText.setText(item.imageUrl == null || item.imageUrl.isBlank()
-                ? "No catalog image uploaded"
-                : "Current image is saved.");
-        if (item.imageUrl == null || item.imageUrl.isBlank()) {
+        selectedImageText.setText(selectedItemHasImage
+                ? "Current image is saved. Choose another image to replace it."
+                : "Choose an image before saving.");
+        if (!selectedItemHasImage) {
             hideSelectedImage();
         } else {
             showSelectedImage(ApiClient.fullImageUrl(item.imageUrl));
@@ -213,7 +229,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
         populateSizeChart(item);
         currentAvailableSection.setVisibility(View.VISIBLE);
         currentItemsAdapter.setSelectedItemId(item.id);
-        showStatus("Editing item " + item.id, false);
     }
 
     private void startAddMode() {
@@ -229,43 +244,55 @@ public class AdminCatalogActivity extends AppCompatActivity {
         updateModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.VISIBLE);
         selectedImageUri = null;
+        clearFieldErrors();
         selectedImageText.setText("Select an item from Current Available to edit it.");
         currentItemsAdapter.setSelectedItemId(selectedItemId);
-        showStatus("Select an item to update", false);
     }
 
     private void clearForm() {
         selectedItemId = null;
         selectedImageUri = null;
+        selectedItemHasImage = false;
         nameInput.setText("");
         descriptionInput.setText("");
         brandInput.setText("");
         chartSizesInput.setText("S,M,L,XL");
         activeCheckbox.setChecked(true);
+        clearFieldErrors();
         selectedImageText.setText("Choose an image, fill the fields, then Save Item.");
         hideSelectedImage();
         currentItemsAdapter.setSelectedItemId(null);
-        showStatus("Adding new item", false);
     }
 
     private void showInitialMode() {
         addMode = false;
         selectedItemId = null;
         selectedImageUri = null;
+        selectedItemHasImage = false;
         updateModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.GONE);
         clearForm();
         selectedImageText.setText("Choose Add Item to upload a new catalog image, or Update Item to edit an existing item.");
         hideSelectedImage();
-        showStatus("Choose Add Item or Update Item", false);
     }
 
     private void saveItem() {
+        clearFieldErrors();
+
+        ClothingItemRequest request = buildItemRequest();
+        if (request == null) return;
+
         List<Map<String, Object>> sizeChart = buildSizeChartRows();
         if (sizeChart == null) return;
 
-        ClothingItemRequest request = buildItemRequest(sizeChart);
-        if (request == null) return;
+        if (selectedItemId == null && selectedImageUri == null) {
+            showImageRequiredError();
+            return;
+        }
+        if (selectedItemId != null && selectedImageUri == null && !selectedItemHasImage) {
+            showImageRequiredError();
+            return;
+        }
 
         setLoading(true);
         if (selectedItemId == null) {
@@ -310,19 +337,39 @@ public class AdminCatalogActivity extends AppCompatActivity {
         }
     }
 
-    private ClothingItemRequest buildItemRequest(List<Map<String, Object>> sizeChart) {
+    private ClothingItemRequest buildItemRequest() {
         String name = nameInput.getText().toString().trim();
         if (name.isEmpty()) {
-            showStatus("Name is required", true);
+            showFieldRequiredError(nameInputLayout, nameInput, "Name is required");
+            return null;
+        }
+        String description = descriptionInput.getText().toString().trim();
+        if (description.isEmpty()) {
+            showFieldRequiredError(descriptionInputLayout, descriptionInput, "Description is required");
+            return null;
+        }
+        String brand = brandInput.getText().toString().trim();
+        if (brand.isEmpty()) {
+            showFieldRequiredError(brandInputLayout, brandInput, "Brand is required");
+            return null;
+        }
+        String category = (String) categorySpinner.getSelectedItem();
+        if (CATEGORY_PLACEHOLDER.equals(category)) {
+            showSpinnerRequiredError(categorySpinner, "Category is required");
+            return null;
+        }
+        String gender = (String) genderSpinner.getSelectedItem();
+        if (GENDER_PLACEHOLDER.equals(gender)) {
+            showSpinnerRequiredError(genderSpinner, "Gender is required");
             return null;
         }
 
         ClothingItemRequest request = new ClothingItemRequest();
         request.name = name;
-        request.description = textOrNull(descriptionInput);
-        request.category = (String) categorySpinner.getSelectedItem();
-        request.gender = (String) genderSpinner.getSelectedItem();
-        request.brand = textOrNull(brandInput);
+        request.description = description;
+        request.category = category;
+        request.gender = gender;
+        request.brand = brand;
         request.sizeSystem = DEFAULT_SIZE_SYSTEM;
         request.availableSizes = extractSizeLabels();
         request.isActive = activeCheckbox.isChecked();
@@ -332,7 +379,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private List<Map<String, Object>> buildSizeChartRows() {
         List<String> sizes = extractSizeLabels();
         if (sizes.isEmpty()) {
-            showStatus("At least one size is required", true);
+            showFieldRequiredError(chartSizesInputLayout, chartSizesInput, "At least one size is required");
             return null;
         }
 
@@ -383,6 +430,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
                         public void onResponse(Call<ClothingItemSaveResponse> call, Response<ClothingItemSaveResponse> response) {
                             if (response.isSuccessful()) {
                                 selectedImageUri = null;
+                                selectedItemHasImage = true;
                                 finishSave(successMessage);
                             } else {
                                 setLoading(false);
@@ -458,12 +506,43 @@ public class AdminCatalogActivity extends AppCompatActivity {
         saveButton.setEnabled(!loading);
         addModeButton.setEnabled(!loading);
         updateModeButton.setEnabled(!loading);
+        chooseImageButton.setEnabled(!loading);
     }
 
     private void showStatus(String message, boolean isError) {
         statusText.setText(message == null ? "" : message);
         statusText.setTextColor(ContextCompat.getColor(this, isError ? R.color.error : R.color.success));
         statusText.setVisibility(View.VISIBLE);
+    }
+
+    private void showFieldRequiredError(TextInputLayout layout, EditText input, String message) {
+        layout.setError(message);
+        input.requestFocus();
+        scrollToView(layout);
+    }
+
+    private void showSpinnerRequiredError(Spinner spinner, String message) {
+        spinner.requestFocus();
+        scrollToView(spinner);
+    }
+
+    private void showImageRequiredError() {
+        selectedImageText.setText("Image is required");
+        selectedImageText.setTextColor(ContextCompat.getColor(this, R.color.error));
+        chooseImageButton.requestFocus();
+        scrollToView(chooseImageButton);
+    }
+
+    private void clearFieldErrors() {
+        nameInputLayout.setError(null);
+        descriptionInputLayout.setError(null);
+        brandInputLayout.setError(null);
+        chartSizesInputLayout.setError(null);
+        selectedImageText.setTextColor(ContextCompat.getColor(this, R.color.on_surface_variant));
+    }
+
+    private void scrollToView(View view) {
+        adminCatalogScroll.post(() -> adminCatalogScroll.smoothScrollTo(0, view.getTop()));
     }
 
     private String parseError(Response<?> response) {
@@ -493,11 +572,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
 
     private String value(String value) {
         return value == null ? "" : value;
-    }
-
-    private String textOrNull(EditText input) {
-        String value = input.getText().toString().trim();
-        return value.isEmpty() ? null : value;
     }
 
     private void goToLogin() {

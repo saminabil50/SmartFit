@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/adminCatalogScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
@@ -91,10 +92,11 @@
             style="@style/Text.SectionTitle" />
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/nameInputLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Name">
+            android:hint="Name *">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/nameInput"
                 android:layout_width="match_parent"
@@ -102,11 +104,12 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/descriptionInputLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/element_gap"
-            android:hint="Description">
+            android:hint="Description *">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/descriptionInput"
                 android:layout_width="match_parent"
@@ -120,7 +123,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/card_padding"
             android:layout_marginBottom="4dp"
-            android:text="Category"
+            android:text="Category *"
             style="@style/Text.Label" />
 
         <Spinner
@@ -134,7 +137,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/element_gap"
             android:layout_marginBottom="4dp"
-            android:text="Gender"
+            android:text="Gender *"
             style="@style/Text.Label" />
 
         <Spinner
@@ -144,11 +147,12 @@
             android:background="@drawable/bg_spinner_outlined" />
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/brandInputLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/element_gap"
-            android:hint="Brand">
+            android:hint="Brand *">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/brandInput"
                 android:layout_width="match_parent"
@@ -163,6 +167,18 @@
             android:layout_marginTop="@dimen/card_padding"
             android:textColor="@color/on_surface_variant"
             android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chooseImageButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/small_gap"
+            android:text="Choose Image *"
+            android:textAllCaps="false"
+            app:icon="@android:drawable/ic_menu_gallery"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/selectedImageCard"
@@ -202,10 +218,11 @@
             style="@style/Text.SectionTitle" />
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/chartSizesInputLayout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Sizes (comma separated)">
+            android:hint="Sizes (comma separated) *">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/chartSizesInput"
                 android:layout_width="match_parent"
@@ -218,7 +235,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/touch_target"
             android:layout_marginTop="@dimen/element_gap"
-            android:text="Available"
+            android:text="Available *"
             android:textColor="@color/on_surface"
             android:textSize="14sp" />
 

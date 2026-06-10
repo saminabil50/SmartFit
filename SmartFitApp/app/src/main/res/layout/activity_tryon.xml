@@ -11,6 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:title="Virtual Try-On"
+        app:logo="@drawable/logo_white"
+        app:logoDescription="SmartFit logo"
         style="@style/SmartFit.Toolbar" />
 
     <ScrollView
@@ -44,13 +46,32 @@
                 app:strokeWidth="1dp"
                 app:cardBackgroundColor="@color/image_placeholder">
 
-                <ImageView
-                    android:id="@+id/selectedImagePreview"
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="260dp"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="Selected try-on photo"
-                    android:scaleType="fitCenter" />
+                    android:layout_height="260dp">
+
+                    <ImageView
+                        android:id="@+id/selectedImagePreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:adjustViewBounds="true"
+                        android:contentDescription="Selected try-on photo"
+                        android:scaleType="fitCenter" />
+
+                    <TextView
+                        android:id="@+id/photoInstructionsText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp"
+                        android:text="Photo tips\n• Full body visible\n• Stand facing camera\n• Clear light, plain background\n• Small file, good quality"
+                        android:textColor="@color/on_surface_variant"
+                        android:textSize="14sp" />
+
+                </FrameLayout>
 
             </com.google.android.material.card.MaterialCardView>
 

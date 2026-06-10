@@ -166,24 +166,15 @@ public class ClothingItemService {
     public ClothingItemResponse updateItem(Long id, ClothingItemRequest request) {
         ClothingItem item = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clothing item not found"));
+        validateRequest(request);
 
-        if (request.getName() != null && !request.getName().isBlank())
-            item.setName(request.getName().trim());
-        if (request.getDescription() != null)
-            item.setDescription(trimToNull(request.getDescription()));
-        if (request.getCategory() != null && !request.getCategory().isBlank())
-            item.setCategory(validateCategory(request.getCategory()));
-        if (request.getGender() != null) {
-            item.setGender(validateGender(request.getGender()));
-        }
-        if (request.getBrand() != null)
-            item.setBrand(trimToNull(request.getBrand()));
-        if (request.getSizeSystem() != null)
-            item.setSizeSystem(validateSizeSystem(request.getSizeSystem()));
-        if (request.getAvailableSizes() != null) {
-            validateAvailableSizes(request.getAvailableSizes());
-            item.setAvailableSizes(serializeList(request.getAvailableSizes()));
-        }
+        item.setName(request.getName().trim());
+        item.setDescription(request.getDescription().trim());
+        item.setCategory(validateCategory(request.getCategory()));
+        item.setGender(validateGender(request.getGender()));
+        item.setBrand(request.getBrand().trim());
+        item.setSizeSystem(validateSizeSystem(request.getSizeSystem()));
+        item.setAvailableSizes(serializeList(request.getAvailableSizes()));
         if (request.getBasePrice() != null) {
             if (request.getBasePrice() <= 0)
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "base_price must be positive");
@@ -298,8 +289,16 @@ public class ClothingItemService {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private void validateRequest(ClothingItemRequest request) {
+        if (request == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request body is required");
         if (request.getName() == null || request.getName().isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+        if (request.getDescription() == null || request.getDescription().isBlank())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "description is required");
+        if (request.getBrand() == null || request.getBrand().isBlank())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "brand is required");
+        if (request.getIsActive() == null)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "is_active is required");
         validateCategory(request.getCategory());
         validateGender(request.getGender());
         validateSizeSystem(request.getSizeSystem());
