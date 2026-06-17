@@ -1,6 +1,7 @@
 package com.example.FitApp.tryon;
 
-import com.example.FitApp.ai.AiClient;
+import com.example.FitApp.ai.FalTryOnResult;
+import com.example.FitApp.ai.FalTryOnService;
 import com.example.FitApp.catalog.ClothingItem;
 import com.example.FitApp.catalog.ClothingItemRepository;
 import com.example.FitApp.image.Image;
@@ -28,9 +29,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
@@ -45,7 +44,7 @@ public class TryOnService {
     private final ImageService imageService;
     private final ClothingItemRepository clothingItemRepository;
     private final ObjectMapper objectMapper;
-    private final AiClient aiClient;
+    private final FalTryOnService falTryOnService;
 
     public TryOnResultResponse generate(User user, TryOnGenerateRequest request) {
         if (request == null || request.getImageId() == null || request.getItemId() == null) {
@@ -58,7 +57,7 @@ public class TryOnService {
         ClothingItem item = clothingItemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Clothing item not found"));
 
-        AiTryOnResult aiResult = generateWithAi(image, item);
+        FalTryOnResult aiResult = generateWithFal(image, item);
 
         TryOnResult result = TryOnResult.builder()
                 .userId(user.getId())
@@ -81,55 +80,12 @@ public class TryOnService {
         return generate(user, request);
     }
 
-    @SuppressWarnings("unchecked")
-    private AiTryOnResult generateWithAi(Image image, ClothingItem item) {
+    private FalTryOnResult generateWithFal(Image image, ClothingItem item) {
         String clothingImagePath = resolveClothingImagePath(item);
-        Path outputDir = Paths.get(uploadsDir).toAbsolutePath().normalize().resolve("tryon");
-        try {
-            Files.createDirectories(outputDir);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare try-on output directory");
-        }
-
-        Map<String, Object> response = aiClient.generateTryOn(
-                image.getFilePath(),
-                clothingImagePath,
-                outputDir.toString()
-        );
-        if (response == null) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "AI try-on server is unavailable");
-        }
-        if (response.containsKey("_ai_error_body")) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_GATEWAY,
-                    extractAiErrorDetail(stringValue(response.get("_ai_error_body")))
-            );
-        }
-
-        // Prefer result_image_url (fal.ai CDN URL), fall back to result_image_path (local compositing)
-        String resultImageUrl = stringValue(response.get("result_image_url"));
-        if (resultImageUrl == null || resultImageUrl.isBlank()) {
-            String resultImagePath = stringValue(response.get("result_image_path"));
-            if (resultImagePath == null || resultImagePath.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "AI try-on did not return a result image");
-            }
-            resultImageUrl = toUploadsUrl(resultImagePath);
-        }
-
-        String status = stringValue(response.get("status"));
-        Number confidence = response.get("confidence_score") instanceof Number number ? number : null;
-        List<String> warnings = response.get("warnings") instanceof List<?> list
-                ? list.stream().map(String::valueOf).toList()
-                : Collections.emptyList();
-
-        log.info("AI try-on completed for image {} item {} status {} url {}",
-                image.getId(), item.getId(), status, resultImageUrl);
-        return new AiTryOnResult(
-                resultImageUrl,
-                status == null || status.isBlank() ? "completed" : status,
-                confidence != null ? confidence.doubleValue() : null,
-                warnings
-        );
+        FalTryOnResult result = falTryOnService.generate(image.getFilePath(), clothingImagePath);
+        log.info("fal.ai try-on completed for image {} item {} status {} url {}",
+                image.getId(), item.getId(), result.status(), result.resultImageUrl());
+        return result;
     }
 
     private String resolveClothingImagePath(ClothingItem item) {
@@ -147,31 +103,6 @@ public class TryOnService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Selected clothing item image file was not found");
         }
         return imagePath.toString();
-    }
-
-    private String toUploadsUrl(String resultImagePath) {
-        Path uploadsPath = Paths.get(uploadsDir).toAbsolutePath().normalize();
-        Path resultPath = Paths.get(resultImagePath).toAbsolutePath().normalize();
-
-        if (!Files.exists(resultPath)) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "AI try-on result image file was not found");
-        }
-
-        if (resultPath.startsWith(uploadsPath)) {
-            String relative = uploadsPath.relativize(resultPath).toString().replace('\\', '/');
-            return "/uploads/" + relative;
-        }
-
-        Path tryOnDir = uploadsPath.resolve("tryon").normalize();
-        try {
-            Files.createDirectories(tryOnDir);
-            String filename = "ai-" + System.currentTimeMillis() + "-" + resultPath.getFileName();
-            Path copied = tryOnDir.resolve(filename).normalize();
-            Files.copy(resultPath, copied);
-            return "/uploads/tryon/" + filename;
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Failed to store AI try-on result image");
-        }
     }
 
     public TryOnResultListResponse getMyResults(User user) {
@@ -257,24 +188,4 @@ public class TryOnService {
         }
     }
 
-    private String stringValue(Object value) {
-        return value == null ? null : String.valueOf(value);
-    }
-
-    private String extractAiErrorDetail(String body) {
-        if (body == null || body.isBlank()) {
-            return "AI try-on failed";
-        }
-        try {
-            Object parsed = objectMapper.readValue(body, Object.class);
-            if (parsed instanceof Map<?, ?> map && map.get("detail") != null) {
-                return String.valueOf(map.get("detail"));
-            }
-        } catch (Exception ignored) {
-            // Fall through to raw body below.
-        }
-        return body;
-    }
-
-    private record AiTryOnResult(String resultImageUrl, String status, Double confidenceScore, List<String> warnings) {}
 }

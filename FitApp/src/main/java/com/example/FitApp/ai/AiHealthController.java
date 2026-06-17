@@ -15,17 +15,22 @@ import java.util.Map;
 public class AiHealthController {
 
     private final AiClient aiClient;
+    private final FalTryOnService falTryOnService;
 
     /**
      * GET /api/v1/health/ai
      *
-     * Checks whether the Python AI server is reachable.
+     * Checks fal.ai try-on configuration and whether the Python AI server is reachable
+     * for the remaining image validation/background removal endpoints.
      * Requires authentication (same as all other endpoints).
      */
     @GetMapping("/ai")
     public ResponseEntity<Map<String, Object>> checkAiHealth() {
         Map<String, Object> aiHealth = aiClient.checkAiHealth();
         Map<String, Object> response = new LinkedHashMap<>();
+        response.put("tryon_provider", "fal.ai");
+        response.put("tryon_model", falTryOnService.getModel());
+        response.put("fal_key_configured", falTryOnService.isConfigured());
         response.put("ai_server_available", aiHealth != null);
         response.put("ai_server_url", aiClient.getAiServerUrl());
         response.put("ai_health", aiHealth);

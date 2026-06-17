@@ -54,6 +54,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>ai.fal.client</groupId>
+			<artifactId>fal-client</artifactId>
+			<version>0.7.1</version>
+		</dependency>
 
 		<!-- JWT -->
 		<dependency>

@@ -20,7 +20,7 @@ import java.util.Map;
  * Configure the URL via:  AI_SERVER_URL=http://127.0.0.1:9000
  * or application.properties:  ai.server.url=http://127.0.0.1:9000
  *
- * All methods return null when the AI server is unreachable so callers can
+ * Methods return null when the AI server is unreachable so callers can
  * fall back to existing backend logic without crashing.
  */
 @Slf4j
@@ -48,48 +48,6 @@ public class AiClient {
                     .body(Map.class);
         } catch (RestClientException e) {
             log.warn("AI server health check failed: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * POST /ai/tryon/generate
-     *
-     * @param userImagePath     path to the user photo
-     * @param clothingImagePath path to the clothing item image
-     * @param outputDir         optional directory for the result image
-     */
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> generateTryOn(String userImagePath, String clothingImagePath, String outputDir) {
-        try {
-            Map<String, Object> body = new HashMap<>();
-            body.put("user_image_path", userImagePath);
-            body.put("clothing_image_path", clothingImagePath);
-            if (outputDir != null) body.put("output_dir", outputDir);
-            body.put("category", "auto");
-            body.put("mode", "quality");
-            body.put("garment_photo_type", "auto");
-            body.put("moderation_level", "permissive");
-            body.put("num_samples", 1);
-            body.put("segmentation_free", true);
-            body.put("output_format", "png");
-
-            log.info("Calling AI try-on endpoint: {}/ai/tryon/generate", aiServerUrl);
-            return aiRestClient.post()
-                    .uri(aiServerUrl + "/ai/tryon/generate")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .body(toJson(body))
-                    .retrieve()
-                    .body(Map.class);
-        } catch (RestClientResponseException e) {
-            log.warn("AI try-on generation failed with HTTP {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
-            Map<String, Object> error = new HashMap<>();
-            error.put("_ai_error_status", e.getStatusCode().value());
-            error.put("_ai_error_body", e.getResponseBodyAsString());
-            return error;
-        } catch (RestClientException e) {
-            log.warn("AI try-on generation failed: {}", e.getMessage());
             return null;
         }
     }
