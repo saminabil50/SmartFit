@@ -146,14 +146,63 @@
                 android:text="What would you like to do?"
                 style="@style/Text.SectionTitle" />
 
-            <!-- ── Action tiles (2x2) ── -->
+            <!-- ── Action tiles ── -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/tryOnButton"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/outline_variant"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:padding="20dp">
+
+                    <ImageView
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:contentDescription="Virtual Try-On"
+                        android:src="@android:drawable/ic_menu_camera"
+                        android:tint="@color/primary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Virtual Try-On"
+                        android:textColor="@color/on_surface"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Try outfits on your photo"
+                        android:textColor="@color/on_surface_variant"
+                        android:textSize="13sp"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/tryOnButton"
+                    android:id="@+id/photosButton"
                     android:layout_width="0dp"
                     android:layout_height="128dp"
                     android:layout_weight="1"
@@ -177,15 +226,15 @@
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:contentDescription="Virtual Try-On"
-                            android:src="@android:drawable/ic_menu_camera"
+                            android:contentDescription="Generated Try-Ons"
+                            android:src="@android:drawable/ic_menu_gallery"
                             android:tint="@color/primary" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="Virtual Try-On"
+                            android:text="Generated Try-Ons"
                             android:textColor="@color/on_surface"
                             android:textStyle="bold"
                             android:textSize="15sp" />
@@ -194,7 +243,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:text="Try outfits on your photo"
+                            android:text="View your results"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="12sp"
                             android:maxLines="1"
@@ -254,116 +303,58 @@
 
             </LinearLayout>
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/adminCatalogButton"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="128dp"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal">
+                android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/outline_variant"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@color/surface">
 
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/photosButton"
-                    android:layout_width="0dp"
-                    android:layout_height="128dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/outline_variant"
-                    app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:padding="16dp">
 
-                    <LinearLayout
+                    <ImageView
+                        android:id="@+id/adminTileIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:contentDescription="Admin"
+                        android:src="@android:drawable/ic_menu_upload"
+                        android:tint="@color/secondary" />
+
+                    <TextView
+                        android:id="@+id/adminTileTitle"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="Admin Catalog"
+                        android:textColor="@color/on_surface"
+                        android:textStyle="bold"
+                        android:textSize="15sp" />
 
-                        <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:contentDescription="Generated Try-Ons"
-                            android:src="@android:drawable/ic_menu_gallery"
-                            android:tint="@color/primary" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="Generated Try-Ons"
-                            android:textColor="@color/on_surface"
-                            android:textStyle="bold"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="View your results"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp"
-                            android:maxLines="1"
-                            android:ellipsize="end" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/adminCatalogButton"
-                    android:layout_width="0dp"
-                    android:layout_height="128dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:foreground="?attr/selectableItemBackground"
-                    app:cardCornerRadius="18dp"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/outline_variant"
-                    app:strokeWidth="1dp"
-                    app:cardBackgroundColor="@color/surface">
-
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/adminTileSubtitle"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:gravity="center_vertical"
-                        android:padding="16dp">
-
-                        <ImageView
-                            android:id="@+id/adminTileIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:contentDescription="Admin"
-                            android:src="@android:drawable/ic_menu_upload"
-                            android:tint="@color/secondary" />
-
-                        <TextView
-                            android:id="@+id/adminTileTitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:text="Upload Photo"
-                            android:textColor="@color/on_surface"
-                            android:textStyle="bold"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:id="@+id/adminTileSubtitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Add a new photo"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="12sp"
-                            android:maxLines="1"
-                            android:ellipsize="end" />
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Manage catalog items"
+                        android:textColor="@color/on_surface_variant"
+                        android:textSize="12sp"
+                        android:maxLines="1"
+                        android:ellipsize="end" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 

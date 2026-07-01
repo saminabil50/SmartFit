@@ -46,7 +46,7 @@ public class CatalogActivity extends AppCompatActivity {
     private boolean filtersReady = false;
     private boolean firstResume = true;
 
-    private final String[] CATEGORIES = {"All", "tshirt", "shirt", "hoodie", "jacket", "sweater", "pants", "jeans", "shorts", "skirt", "dress", "shoes", "accessories"};
+    private final String[] CATEGORIES = {"All", "tshirt", "shirt", "hoodie", "pants", "jeans", "dress"};
     private final String[] GENDERS = {"All", "male", "female", "unisex"};
 
     @Override

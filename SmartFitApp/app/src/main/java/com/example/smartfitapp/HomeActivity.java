@@ -66,8 +66,14 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, CatalogActivity.class)));
         tryOnButton.setOnClickListener(v ->
                 startActivity(new Intent(this, TryOnActivity.class)));
-        adminCatalogButton.setOnClickListener(v ->
-                startActivity(new Intent(this, isAdmin ? AdminCatalogActivity.class : ImageUploadActivity.class)));
+        if (isAdmin) {
+            adminCatalogButton.setVisibility(View.VISIBLE);
+            adminCatalogButton.setOnClickListener(v ->
+                    startActivity(new Intent(this, AdminCatalogActivity.class)));
+        } else {
+            adminCatalogButton.setVisibility(View.GONE);
+            adminCatalogButton.setOnClickListener(null);
+        }
     }
 
     private void configureFourthTile() {
@@ -75,15 +81,9 @@ public class HomeActivity extends AppCompatActivity {
         TextView subtitle = findViewById(R.id.adminTileSubtitle);
         android.widget.ImageView icon = findViewById(R.id.adminTileIcon);
 
-        if (isAdmin) {
-            title.setText("Admin Catalog");
-            subtitle.setText("Manage catalog items");
-            icon.setImageResource(android.R.drawable.ic_menu_edit);
-        } else {
-            title.setText("Upload Photo");
-            subtitle.setText("Add a new photo");
-            icon.setImageResource(android.R.drawable.ic_menu_upload);
-        }
+        title.setText("Admin Catalog");
+        subtitle.setText("Manage catalog items");
+        icon.setImageResource(android.R.drawable.ic_menu_edit);
     }
 
     private void showProfileMenu(View anchor) {
