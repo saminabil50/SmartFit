@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,6 +29,7 @@ import com.example.smartfitapp.model.ClothingItem;
 import com.example.smartfitapp.model.ClothingItemListResponse;
 import com.example.smartfitapp.model.ClothingItemRequest;
 import com.example.smartfitapp.model.ClothingItemSaveResponse;
+import com.example.smartfitapp.model.MessageResponse;
 import com.example.smartfitapp.model.SizeChartUpdateRequest;
 import com.example.smartfitapp.model.SizeChartUpdateResponse;
 import com.example.smartfitapp.network.ApiClient;
@@ -75,7 +77,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private Spinner categorySpinner, genderSpinner;
     private CheckBox activeCheckbox;
     private LinearLayout currentAvailableSection;
-    private MaterialButton addModeButton, updateModeButton, chooseImageButton, saveButton;
+    private MaterialButton addModeButton, updateModeButton, chooseImageButton, saveButton, deactivateButton;
     private TextView statusText, selectedImageText;
     private View selectedImageCard;
     private ImageView selectedImagePreview;
@@ -124,6 +126,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
         updateModeButton = findViewById(R.id.updateModeButton);
         chooseImageButton = findViewById(R.id.chooseImageButton);
         saveButton = findViewById(R.id.saveButton);
+        deactivateButton = findViewById(R.id.deactivateButton);
         statusText = findViewById(R.id.statusText);
         selectedImageText = findViewById(R.id.selectedImageText);
         selectedImageCard = findViewById(R.id.selectedImageCard);
@@ -143,6 +146,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
         updateModeButton.setOnClickListener(v -> startUpdateMode());
         chooseImageButton.setOnClickListener(v -> chooseImage());
         saveButton.setOnClickListener(v -> saveItem());
+        deactivateButton.setOnClickListener(v -> confirmDeactivateSelected());
 
         showInitialMode();
         loadItems();
@@ -219,6 +223,8 @@ public class AdminCatalogActivity extends AppCompatActivity {
         selectedImageText.setText(selectedItemHasImage
                 ? "Current image is saved. Choose another image to replace it."
                 : "Choose an image before saving.");
+        deactivateButton.setVisibility(View.VISIBLE);
+        deactivateButton.setEnabled(true);
         if (!selectedItemHasImage) {
             hideSelectedImage();
         } else {
@@ -246,6 +252,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
         selectedImageUri = null;
         clearFieldErrors();
         selectedImageText.setText("Select an item from Current Available to edit it.");
+        deactivateButton.setVisibility(selectedItemId == null ? View.GONE : View.VISIBLE);
         currentItemsAdapter.setSelectedItemId(selectedItemId);
     }
 
@@ -260,6 +267,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
         activeCheckbox.setChecked(true);
         clearFieldErrors();
         selectedImageText.setText("Choose an image, fill the fields, then Save Item.");
+        deactivateButton.setVisibility(View.GONE);
         hideSelectedImage();
         currentItemsAdapter.setSelectedItemId(null);
     }
@@ -273,6 +281,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
         currentAvailableSection.setVisibility(View.GONE);
         clearForm();
         selectedImageText.setText("Choose Add Item to upload a new catalog image, or Update Item to edit an existing item.");
+        deactivateButton.setVisibility(View.GONE);
         hideSelectedImage();
     }
 
@@ -457,6 +466,45 @@ public class AdminCatalogActivity extends AppCompatActivity {
         if (selectedItemId != null) loadItem(selectedItemId);
     }
 
+    private void confirmDeactivateSelected() {
+        if (selectedItemId == null) {
+            showStatus("Select an item to deactivate", true);
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle("Deactivate Item")
+                .setMessage("Deactivate this catalog item? It will no longer appear to clients.")
+                .setPositiveButton("Deactivate", (dialog, which) -> deactivateSelectedItem())
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void deactivateSelectedItem() {
+        Long itemId = selectedItemId;
+        setLoading(true);
+        ApiClient.get().deactivateAdminClothingItem(authManager.getBearerToken(), itemId)
+                .enqueue(new Callback<MessageResponse>() {
+                    @Override
+                    public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                        setLoading(false);
+                        if (response.isSuccessful()) {
+                            clearForm();
+                            startUpdateMode();
+                            loadItems();
+                            showStatus("Clothing item deactivated successfully", false);
+                        } else {
+                            showStatus(parseError(response), true);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<MessageResponse> call, Throwable t) {
+                        setLoading(false);
+                        showStatus("Network error: " + t.getMessage(), true);
+                    }
+                });
+    }
+
     private void chooseImage() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
@@ -504,6 +552,7 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private void setLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         saveButton.setEnabled(!loading);
+        deactivateButton.setEnabled(!loading && selectedItemId != null);
         addModeButton.setEnabled(!loading);
         updateModeButton.setEnabled(!loading);
         chooseImageButton.setEnabled(!loading);

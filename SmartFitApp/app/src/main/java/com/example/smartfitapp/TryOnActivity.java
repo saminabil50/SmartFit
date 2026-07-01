@@ -142,6 +142,7 @@ public class TryOnActivity extends AppCompatActivity {
         generateButton.setOnClickListener(v -> generateTryOn());
         cameraButton.setOnClickListener(v -> requestCameraAndLaunch());
         galleryButton.setOnClickListener(v -> launchGallery());
+        selectedItemText.setText("Loading catalog...");
         setLoading(true);
         loadClothingItems();
     }
@@ -153,11 +154,19 @@ public class TryOnActivity extends AppCompatActivity {
                     public void onResponse(Call<ClothingItemListResponse> call, Response<ClothingItemListResponse> response) {
                         setLoading(false);
                         if (response.isSuccessful() && response.body() != null && response.body().items != null) {
+                            Long selectedId = selectedClothingItem != null ? selectedClothingItem.id : null;
                             clothingItems.clear();
                             clothingItems.addAll(response.body().items);
                             clothingAdapter.notifyDataSetChanged();
+                            restoreSelectedCatalogItem(selectedId);
                         } else if (response.code() == 401) {
                             showAuthError();
+                        } else {
+                            clothingItems.clear();
+                            clothingAdapter.notifyDataSetChanged();
+                            selectedClothingItem = null;
+                            selectedItemText.setText("Failed to load catalog");
+                            showTryOnError("Failed to load catalog: " + readErrorBody(response));
                         }
                         updateGenerateButton();
                     }
@@ -165,10 +174,36 @@ public class TryOnActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<ClothingItemListResponse> call, Throwable t) {
                         setLoading(false);
-                        Toast.makeText(TryOnActivity.this, "Failed to load catalog", Toast.LENGTH_SHORT).show();
+                        clothingItems.clear();
+                        clothingAdapter.notifyDataSetChanged();
+                        selectedClothingItem = null;
+                        selectedItemText.setText("Failed to load catalog");
+                        Toast.makeText(TryOnActivity.this, "Failed to load catalog: " + t.getMessage(), Toast.LENGTH_LONG).show();
                         updateGenerateButton();
                     }
                 });
+    }
+
+    private void restoreSelectedCatalogItem(Long selectedId) {
+        if (clothingItems.isEmpty()) {
+            selectedClothingItem = null;
+            clothingAdapter.setSelectedItemId(null);
+            selectedItemText.setText("No catalog items available");
+            return;
+        }
+        if (selectedId != null) {
+            for (ClothingItem item : clothingItems) {
+                if (selectedId.equals(item.id)) {
+                    selectedClothingItem = item;
+                    clothingAdapter.setSelectedItemId(item.id);
+                    selectedItemText.setText(item.name != null ? item.name : "Selected item");
+                    return;
+                }
+            }
+        }
+        selectedClothingItem = null;
+        clothingAdapter.setSelectedItemId(null);
+        selectedItemText.setText("No item selected");
     }
 
     private void selectClothingItem(ClothingItem item) {

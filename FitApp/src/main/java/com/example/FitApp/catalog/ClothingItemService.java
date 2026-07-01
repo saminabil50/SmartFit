@@ -81,9 +81,10 @@ public class ClothingItemService {
                     cb.equal(cb.lower(root.get("gender")), "unisex")
             ));
 
+        int safePage = Math.max(page, 0);
         int safeLimit = Math.min(Math.max(limit, 1), 100);
         Page<ClothingItem> result = repository.findAll(spec,
-                PageRequest.of(page, safeLimit, Sort.by(Sort.Direction.DESC, "createdAt")));
+                PageRequest.of(safePage, safeLimit, Sort.by(Sort.Direction.DESC, "createdAt")));
 
         List<ClothingItemResponse> items = result.getContent().stream()
                 .map(this::toResponse)
@@ -92,7 +93,7 @@ public class ClothingItemService {
         return ClothingItemListResponse.builder()
                 .items(items)
                 .total(result.getTotalElements())
-                .page(page)
+                .page(safePage)
                 .limit(safeLimit)
                 .build();
     }
@@ -148,14 +149,14 @@ public class ClothingItemService {
         ClothingItem item = ClothingItem.builder()
                 .name(request.getName().trim())
                 .description(trimToNull(request.getDescription()))
-                .category(request.getCategory().trim().toLowerCase())
-                .gender(request.getGender().trim().toLowerCase())
+                .category(validateCategory(request.getCategory()))
+                .gender(validateGender(request.getGender()))
                 .brand(trimToNull(request.getBrand()))
-                .sizeSystem(request.getSizeSystem().trim().toUpperCase())
+                .sizeSystem(validateSizeSystem(request.getSizeSystem()))
                 .availableSizes(serializeList(request.getAvailableSizes()))
                 .basePrice(request.getBasePrice())
                 .currency(trimToNull(request.getCurrency()))
-                .imageUrl(request.getImageUrl())
+                .imageUrl(trimToNull(request.getImageUrl()))
                 .sizeChart(serializeMap(request.getSizeChart()))
                 .isActive(request.getIsActive() != null ? request.getIsActive() : true)
                 .build();
@@ -169,10 +170,10 @@ public class ClothingItemService {
         validateRequest(request);
 
         item.setName(request.getName().trim());
-        item.setDescription(request.getDescription().trim());
+        item.setDescription(trimToNull(request.getDescription()));
         item.setCategory(validateCategory(request.getCategory()));
         item.setGender(validateGender(request.getGender()));
-        item.setBrand(request.getBrand().trim());
+        item.setBrand(trimToNull(request.getBrand()));
         item.setSizeSystem(validateSizeSystem(request.getSizeSystem()));
         item.setAvailableSizes(serializeList(request.getAvailableSizes()));
         if (request.getBasePrice() != null) {
@@ -183,7 +184,7 @@ public class ClothingItemService {
         if (request.getCurrency() != null)
             item.setCurrency(trimToNull(request.getCurrency()));
         if (request.getImageUrl() != null)
-            item.setImageUrl(request.getImageUrl());
+            item.setImageUrl(trimToNull(request.getImageUrl()));
         if (request.getSizeChart() != null)
             item.setSizeChart(serializeMap(request.getSizeChart()));
         if (request.getIsActive() != null)

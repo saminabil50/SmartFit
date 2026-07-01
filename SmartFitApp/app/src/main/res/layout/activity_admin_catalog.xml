@@ -251,6 +251,19 @@
             app:iconGravity="textStart"
             app:iconPadding="8dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/deactivateButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="@dimen/small_gap"
+            android:text="Deactivate Item"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            app:icon="@android:drawable/ic_menu_delete"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp" />
+
         <TextView
             android:id="@+id/statusText"
             android:layout_width="match_parent"
