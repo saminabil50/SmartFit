@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface ClothingItemRepository extends JpaRepository<ClothingItem, Long>,
         JpaSpecificationExecutor<ClothingItem> {
+
+    boolean existsByImageUrl(String imageUrl);
 }

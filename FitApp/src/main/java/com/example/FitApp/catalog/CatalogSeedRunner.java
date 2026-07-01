@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Seeds the catalog from src/main/resources/catalog-seed/ on a fresh database so
- * every clone of the repo shows the same clothing items, instead of relying on a
- * local, untracked database. Only runs when clothing_items is empty, so it never
- * touches or duplicates data on a database that already has items.
+ * Seeds the catalog from src/main/resources/catalog-seed/ so every clone of the repo
+ * shows the same clothing items, instead of relying on a local, untracked database.
+ * Each seed item is matched against existing rows by its image URL (unique per seed
+ * item), so only items missing from this database get inserted — it never touches or
+ * duplicates rows that are already present, whether they came from a previous seed run
+ * or were added locally through the admin screen.
  */
 @Slf4j
 @Component
@@ -40,8 +42,6 @@ public class CatalogSeedRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (repository.count() > 0) return;
-
         List<Map<String, Object>> seedItems;
         try (InputStream in = new ClassPathResource(SEED_MANIFEST).getInputStream()) {
             seedItems = objectMapper.readValue(in, new TypeReference<>() {});
@@ -51,7 +51,16 @@ public class CatalogSeedRunner implements CommandLineRunner {
         }
 
         Path catalogDir = Paths.get(uploadsDir).toAbsolutePath().normalize().resolve("catalog");
+        int inserted = 0;
         for (Map<String, Object> seed : seedItems) {
+            String filename = (String) seed.get("image");
+            if (filename == null || filename.isBlank()) {
+                log.warn("Skipping seed item '{}' — no image filename to key off of", seed.get("name"));
+                continue;
+            }
+            String imageUrl = "/uploads/catalog/" + filename;
+            if (repository.existsByImageUrl(imageUrl)) continue;
+
             ClothingItem item = ClothingItem.builder()
                     .name((String) seed.get("name"))
                     .description((String) seed.get("description"))
@@ -62,17 +71,19 @@ public class CatalogSeedRunner implements CommandLineRunner {
                     .availableSizes(writeJson(seed.get("availableSizes")))
                     .basePrice(seed.get("basePrice") != null ? ((Number) seed.get("basePrice")).doubleValue() : null)
                     .currency((String) seed.get("currency"))
-                    .imageUrl(copySeedImage(catalogDir, (String) seed.get("image")))
+                    .imageUrl(copySeedImage(catalogDir, filename, imageUrl))
                     .sizeChart(writeJson(seed.get("sizeChart")))
                     .isActive(true)
                     .build();
             repository.save(item);
+            inserted++;
         }
-        log.info("Seeded {} catalog items from {}", seedItems.size(), SEED_MANIFEST);
+        if (inserted > 0) {
+            log.info("Seeded {} missing catalog item(s) from {}", inserted, SEED_MANIFEST);
+        }
     }
 
-    private String copySeedImage(Path catalogDir, String filename) {
-        if (filename == null || filename.isBlank()) return null;
+    private String copySeedImage(Path catalogDir, String filename, String imageUrl) {
         try {
             Files.createDirectories(catalogDir);
             Path target = catalogDir.resolve(filename);
@@ -81,7 +92,7 @@ public class CatalogSeedRunner implements CommandLineRunner {
                     Files.copy(in, target);
                 }
             }
-            return "/uploads/catalog/" + filename;
+            return imageUrl;
         } catch (IOException e) {
             log.warn("Failed to copy seed image {}: {}", filename, e.getMessage());
             return null;
