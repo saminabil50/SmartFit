@@ -69,7 +69,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private String selectedImageMimeType = "image/jpeg";
     private boolean selectedItemHasImage;
-    private boolean addMode = true;
 
     private EditText nameInput, descriptionInput, brandInput;
     private EditText chartSizesInput;
@@ -210,7 +209,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
     }
 
     private void populateForm(ClothingItem item) {
-        addMode = false;
         selectedItemId = item.id;
         updateModeButton.setChecked(true);
         selectedImageUri = null;
@@ -238,7 +236,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
     }
 
     private void startAddMode() {
-        addMode = true;
         addModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.GONE);
         clearForm();
@@ -246,7 +243,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
     }
 
     private void startUpdateMode() {
-        addMode = false;
         updateModeButton.setChecked(true);
         currentAvailableSection.setVisibility(View.VISIBLE);
         selectedImageUri = null;
@@ -273,7 +269,6 @@ public class AdminCatalogActivity extends AppCompatActivity {
     }
 
     private void showInitialMode() {
-        addMode = false;
         selectedItemId = null;
         selectedImageUri = null;
         selectedItemHasImage = false;

@@ -5,17 +5,14 @@ import com.example.smartfitapp.model.ClothingItemListResponse;
 import com.example.smartfitapp.model.ClothingItemRequest;
 import com.example.smartfitapp.model.ClothingItemSaveResponse;
 import com.example.smartfitapp.model.FittingResult;
-import com.example.smartfitapp.model.FittingResultListResponse;
 import com.example.smartfitapp.model.FittingResultRequest;
 import com.example.smartfitapp.model.ImageItem;
-import com.example.smartfitapp.model.ImageListResponse;
 import com.example.smartfitapp.model.LoginRequest;
 import com.example.smartfitapp.model.LoginResponse;
 import com.example.smartfitapp.model.MessageResponse;
 import com.example.smartfitapp.model.RegisterRequest;
 import com.example.smartfitapp.model.SizeChartUpdateRequest;
 import com.example.smartfitapp.model.SizeChartUpdateResponse;
-import com.example.smartfitapp.model.TryOnGenerateRequest;
 import com.example.smartfitapp.model.TryOnResult;
 import com.example.smartfitapp.model.TryOnResultListResponse;
 import com.example.smartfitapp.model.UpdateProfileRequest;
@@ -67,17 +64,6 @@ public interface ApiService {
                                 @Part MultipartBody.Part image,
                                 @Part("image_type") RequestBody imageType);
 
-    @GET("api/v1/images")
-    Call<ImageListResponse> getMyImages(@Header("Authorization") String bearerToken);
-
-    @GET("api/v1/images/{imageId}")
-    Call<ImageItem> getImage(@Header("Authorization") String bearerToken,
-                             @Path("imageId") Long imageId);
-
-    @DELETE("api/v1/images/{imageId}")
-    Call<MessageResponse> deleteImage(@Header("Authorization") String bearerToken,
-                                      @Path("imageId") Long imageId);
-
     // ── Catalog ───────────────────────────────────────────────────────────────
     @GET("api/v1/clothing-items")
     Call<ClothingItemListResponse> getClothingItems(@Header("Authorization") String bearerToken,
@@ -85,23 +71,6 @@ public interface ApiService {
                                                     @Query("gender") String gender,
                                                     @Query("page") int page,
                                                     @Query("limit") int limit);
-
-    @GET("api/v1/clothing-items/{itemId}")
-    Call<ClothingItem> getClothingItem(@Header("Authorization") String bearerToken,
-                                       @Path("itemId") Long itemId);
-
-    @POST("api/v1/clothing-items")
-    Call<ClothingItem> createClothingItem(@Header("Authorization") String bearerToken,
-                                          @Body ClothingItemRequest request);
-
-    @PATCH("api/v1/clothing-items/{itemId}")
-    Call<ClothingItem> updateClothingItem(@Header("Authorization") String bearerToken,
-                                          @Path("itemId") Long itemId,
-                                          @Body ClothingItemRequest request);
-
-    @DELETE("api/v1/clothing-items/{itemId}")
-    Call<MessageResponse> deleteClothingItem(@Header("Authorization") String bearerToken,
-                                             @Path("itemId") Long itemId);
 
     // ── Admin Catalog ───────────────────────────────────────────────────────
     @GET("api/v1/admin/clothing-items")
@@ -143,10 +112,6 @@ public interface ApiService {
                                                        @Body SizeChartUpdateRequest request);
 
     // ── Virtual Try-On ───────────────────────────────────────────────────────
-    @POST("api/v1/tryon/generate")
-    Call<TryOnResult> generateTryOn(@Header("Authorization") String bearerToken,
-                                    @Body TryOnGenerateRequest request);
-
     @Multipart
     @POST("api/v1/tryon/generate-from-image")
     Call<TryOnResult> generateTryOnFromImage(@Header("Authorization") String bearerToken,
@@ -156,10 +121,6 @@ public interface ApiService {
     @GET("api/v1/tryon")
     Call<TryOnResultListResponse> getTryOnResults(@Header("Authorization") String bearerToken);
 
-    @GET("api/v1/tryon/{tryOnId}")
-    Call<TryOnResult> getTryOnResult(@Header("Authorization") String bearerToken,
-                                     @Path("tryOnId") Long tryOnId);
-
     @DELETE("api/v1/tryon/{tryOnId}")
     Call<MessageResponse> deleteTryOnResult(@Header("Authorization") String bearerToken,
                                             @Path("tryOnId") Long tryOnId);
@@ -168,13 +129,6 @@ public interface ApiService {
     @POST("api/v1/fitting-results")
     Call<FittingResult> createFittingResult(@Header("Authorization") String bearerToken,
                                             @Body FittingResultRequest request);
-
-    @GET("api/v1/fitting-results")
-    Call<FittingResultListResponse> getFittingResults(@Header("Authorization") String bearerToken);
-
-    @GET("api/v1/fitting-results/{resultId}")
-    Call<FittingResult> getFittingResult(@Header("Authorization") String bearerToken,
-                                         @Path("resultId") Long resultId);
 
     @DELETE("api/v1/fitting-results/{resultId}")
     Call<MessageResponse> deleteFittingResult(@Header("Authorization") String bearerToken,

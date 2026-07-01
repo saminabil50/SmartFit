@@ -60,10 +60,6 @@ public class ClothingItemService {
     private final ObjectMapper objectMapper;
     private final AiClient aiClient;
 
-    public ClothingItemListResponse getItems(String category, String gender, int page, int limit) {
-        return getItems(null, category, gender, page, limit);
-    }
-
     public ClothingItemListResponse getItems(User user, String category, String gender, int page, int limit) {
         return queryItems(category, gender, List.of(), page, limit);
     }

@@ -104,16 +104,6 @@ public class FittingResultService {
         return new Summary(fitStatus, fitLabel, confidence, summary, warnings, resultImageUrl);
     }
 
-    private String labelForStatus(String fitStatus) {
-        return switch (fitStatus) {
-            case "good_fit" -> "Recommended Fit";
-            case "tight_fit" -> "Tight Fit";
-            case "loose_fit" -> "Loose Fit";
-            case "preview_only" -> "Preview Only";
-            default -> "Uncertain Fit";
-        };
-    }
-
     private FittingResultResponse toResponse(FittingResult result) {
         ClothingItem item = clothingItemRepository.findById(result.getItemId()).orElse(null);
         return toResponse(result, item);
