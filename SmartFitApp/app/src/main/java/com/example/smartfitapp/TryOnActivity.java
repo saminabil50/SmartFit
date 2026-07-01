@@ -67,6 +67,7 @@ public class TryOnActivity extends AppCompatActivity {
     private Button generateButton, cameraButton, galleryButton;
     private ProgressBar progressBar;
     private ImageView selectedImagePreview, resultImage;
+    private View selectedImagePreviewContainer;
     private TextView selectedItemText, resultTitle, warningText, fittingSummaryText, photoInstructionsText;
     private TryOnClothingAdapter clothingAdapter;
     private boolean authErrorShown = false;
@@ -122,6 +123,7 @@ public class TryOnActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         selectedImagePreview = findViewById(R.id.selectedImagePreview);
+        selectedImagePreviewContainer = findViewById(R.id.selectedImagePreviewContainer);
         generateButton = findViewById(R.id.generateButton);
         cameraButton = findViewById(R.id.cameraButton);
         galleryButton = findViewById(R.id.galleryButton);
@@ -295,7 +297,7 @@ public class TryOnActivity extends AppCompatActivity {
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        resizeImageViewToDrawable(resultImage, resource, 320, 220);
+                        resizeImageViewToDrawable(resultImage, resultImage, resource, 320, 220);
                         return false;
                     }
                 })
@@ -307,27 +309,27 @@ public class TryOnActivity extends AppCompatActivity {
         }
     }
 
-    private void resizeImageViewToDrawable(ImageView imageView, Drawable drawable, int fallbackHeightDp, int minHeightDp) {
+    private void resizeImageViewToDrawable(ImageView imageView, View heightTarget, Drawable drawable, int fallbackHeightDp, int minHeightDp) {
         imageView.post(() -> {
             int viewWidth = imageView.getWidth();
             int imageWidth = drawable.getIntrinsicWidth();
             int imageHeight = drawable.getIntrinsicHeight();
 
             if (viewWidth <= 0 || imageWidth <= 0 || imageHeight <= 0) {
-                setImageHeight(imageView, dp(fallbackHeightDp));
+                setImageHeight(heightTarget, dp(fallbackHeightDp));
                 return;
             }
 
             int targetHeight = Math.round(viewWidth * (imageHeight / (float) imageWidth));
-            setImageHeight(imageView, Math.max(dp(minHeightDp), targetHeight));
+            setImageHeight(heightTarget, Math.max(dp(minHeightDp), targetHeight));
         });
     }
 
-    private void setImageHeight(ImageView imageView, int height) {
-        ViewGroup.LayoutParams params = imageView.getLayoutParams();
+    private void setImageHeight(View view, int height) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params.height != height) {
             params.height = height;
-            imageView.setLayoutParams(params);
+            view.setLayoutParams(params);
         }
     }
 
@@ -423,13 +425,13 @@ public class TryOnActivity extends AppCompatActivity {
                 .listener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        setImageHeight(selectedImagePreview, dp(260));
+                        setImageHeight(selectedImagePreviewContainer, dp(260));
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        resizeImageViewToDrawable(selectedImagePreview, resource, 260, 220);
+                        resizeImageViewToDrawable(selectedImagePreview, selectedImagePreviewContainer, resource, 260, 220);
                         return false;
                     }
                 })

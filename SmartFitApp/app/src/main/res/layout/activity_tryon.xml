@@ -47,6 +47,7 @@
                 app:cardBackgroundColor="@color/image_placeholder">
 
                 <FrameLayout
+                    android:id="@+id/selectedImagePreviewContainer"
                     android:layout_width="match_parent"
                     android:layout_height="260dp">
 
